@@ -53,66 +53,219 @@ const nodeTypes = {
   cloudFirewall: CloudFirewallNode,
 };
 
-const defaultInfrastructure = `# Example infrastructure
-elements:
-  app-lb:
+const defaultInfrastructure = `elements:
+  cdn:
+    type: cdn
+    specs:
+      origin: web-app
+      caching: aggressive
+      locations:
+        - us
+        - eu
+        - asia
+    metadata:
+      position:
+        x: 390
+        y: -35
+    connections:
+      - to: web-app
+  web-app:
     type: loadbalancer
     specs:
       protocol: http
       port: 80
       algorithm: round-robin
+    metadata:
+      position:
+        x: 400
+        y: 250
     connections:
-      - to: web-server-1
-        port: 80
-      - to: web-server-2
-        port: 80
-
-  web-server-1:
+      - to: app-server-1
+        port: 8080
+      - to: app-server-2
+        port: 8080
+  app-server-1:
     type: compute
     specs:
-      cpu: 2
-      memory: 4GB
+      cpu: 4
+      memory: 8GB
+    metadata:
+      position:
+        x: 160
+        y: 416
     connections:
+      - to: api-gateway
+        port: 443
       - to: cache
         port: 6379
-      - to: database
-        port: 5432
-
-  web-server-2:
+  app-server-2:
     type: compute
     specs:
-      cpu: 2
-      memory: 4GB
+      cpu: 4
+      memory: 8GB
+    metadata:
+      position:
+        x: 606
+        y: 412
     connections:
+      - to: api-gateway
+        port: 443
       - to: cache
         port: 6379
-      - to: database
-        port: 5432
-
   cache:
     type: database
     specs:
       engine: redis
       version: "7.0"
-      storage: 1GB
-
-  database:
+      storage: 2GB
+    metadata:
+      position:
+        x: 400
+        y: 550
+  api-gateway:
+    type: apigateway
+    specs:
+      auth:
+        - jwt
+        - api-key
+      rateLimit: 1000/min
+      endpoints:
+        - /api/v1
+        - /api/v2
+    metadata:
+      position:
+        x: 400
+        y: 846
+    connections:
+      - to: auth-service
+        port: 8081
+      - to: main-db
+        port: 5432
+      - to: event-collector
+  auth-service:
+    type: compute
+    specs:
+      cpu: 2
+      memory: 4GB
+    metadata:
+      position:
+        x: 230
+        y: 1018
+    connections:
+      - to: users-db
+        port: 5432
+  main-db:
     type: database
     specs:
       engine: postgresql
-      version: "14"
+      version: "15"
       storage: 100GB
-
+    metadata:
+      position:
+        x: 556
+        y: 1196
+  users-db:
+    type: database
+    specs:
+      engine: postgresql
+      version: "15"
+      storage: 50GB
+    metadata:
+      position:
+        x: 244
+        y: 1188
+  event-collector:
+    type: queue
+    specs:
+      type: kafka
+      retention: 7d
+      throughput: 10000msg/s
+    metadata:
+      position:
+        x: 1048
+        y: 1046
+    connections:
+      - to: analytics-processor
+        port: 9092
+  analytics-processor:
+    type: compute
+    specs:
+      cpu: 8
+      memory: 16GB
+    metadata:
+      position:
+        x: 1058
+        y: 1252
+    connections:
+      - to: analytics-store
+        port: 5432
+      - to: data-lake
+        port: 443
+  analytics-store:
+    type: database
+    specs:
+      engine: postgresql
+      version: "15"
+      storage: 500GB
+    metadata:
+      position:
+        x: 942
+        y: 1432
+  data-lake:
+    type: storage
+    specs:
+      type: object-store
+      storage: 10TB
+    metadata:
+      position:
+        x: 1274
+        y: 1458
 networks:
-  main-vpc:
+  app-network:
     specs:
       cidr: 10.0.0.0/16
     contains:
-      - app-lb
-      - web-server-1
-      - web-server-2
+      - web-app
+      - app-server-1
+      - app-server-2
       - cache
-      - database`;
+    metadata:
+      position:
+        x: 112
+        y: 173
+      size:
+        width: 728
+        height: 559
+  service-network:
+    specs:
+      cidr: 10.1.0.0/16
+    contains:
+      - api-gateway
+      - auth-service
+      - main-db
+      - users-db
+    metadata:
+      position:
+        x: 172
+        y: 778
+      size:
+        width: 678
+        height: 574
+  data-network:
+    specs:
+      cidr: 10.2.0.0/16
+    contains:
+      - event-collector
+      - analytics-processor
+      - analytics-store
+      - data-lake
+    metadata:
+      position:
+        x: 882
+        y: 990
+      size:
+        width: 632
+        height: 616`;
 
 function DiagramEditorContent() {
   const [nodes, setNodes] = React.useState<Node[]>([]);
