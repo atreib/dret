@@ -27,6 +27,7 @@ import {
 import { CloudMachineNode } from "./nodes/cloud-machine";
 import { CloudDatabaseNode } from "./nodes/cloud-database";
 import { CloudNetworkNode } from "./nodes/cloud-network";
+import { CloudLoadBalancerNode } from "./nodes/cloud-load-balancer";
 import {
   Select,
   SelectContent,
@@ -39,20 +40,52 @@ const nodeTypes = {
   cloudMachine: CloudMachineNode,
   cloudDatabase: CloudDatabaseNode,
   cloudNetwork: CloudNetworkNode,
+  cloudLoadBalancer: CloudLoadBalancerNode,
 };
 
 const defaultInfrastructure = `# Example infrastructure
-machines:
-  web-server:
-    type: compute
+elements:
+  app-lb:
+    type: loadbalancer
+    specs:
+      protocol: http
+      port: 80
+      algorithm: round-robin
     connections:
-      - to: database
-        port: 5432
+      - to: web-server-1
+        port: 80
+      - to: web-server-2
+        port: 80
+
+  web-server-1:
+    type: compute
     specs:
       cpu: 2
       memory: 4GB
+    connections:
+      - to: cache
+        port: 6379
+      - to: database
+        port: 5432
 
-databases:
+  web-server-2:
+    type: compute
+    specs:
+      cpu: 2
+      memory: 4GB
+    connections:
+      - to: cache
+        port: 6379
+      - to: database
+        port: 5432
+
+  cache:
+    type: database
+    specs:
+      engine: redis
+      version: "7.0"
+      storage: 1GB
+
   database:
     type: database
     specs:
@@ -62,11 +95,13 @@ databases:
 
 networks:
   main-vpc:
-    type: network
     specs:
       cidr: 10.0.0.0/16
     contains:
-      - web-server
+      - app-lb
+      - web-server-1
+      - web-server-2
+      - cache
       - database`;
 
 function DiagramEditorContent() {
@@ -206,6 +241,11 @@ function DiagramEditorContent() {
           ...(type === "cloudNetwork" && {
             cidr: "10.0.0.0/16",
           }),
+          ...(type === "cloudLoadBalancer" && {
+            protocol: "http",
+            port: 80,
+            algorithm: "round-robin",
+          }),
         },
       };
 
@@ -265,6 +305,9 @@ function DiagramEditorContent() {
                   <SelectItem value="cloudMachine">Machine</SelectItem>
                   <SelectItem value="cloudDatabase">Database</SelectItem>
                   <SelectItem value="cloudNetwork">Network</SelectItem>
+                  <SelectItem value="cloudLoadBalancer">
+                    Load Balancer
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

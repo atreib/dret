@@ -6,19 +6,23 @@ type ExtendedNode = Node & {
   resizable?: boolean;
 };
 
-interface InfrastructureNode {
+interface InfrastructureElement {
   type: string;
+  specs?: Record<string, unknown>;
   connections?: Array<{
     to: string;
     port?: number;
   }>;
+}
+
+interface InfrastructureNetwork {
   specs?: Record<string, unknown>;
+  contains?: string[];
 }
 
 interface Infrastructure {
-  machines?: Record<string, InfrastructureNode>;
-  databases?: Record<string, InfrastructureNode>;
-  networks?: Record<string, InfrastructureNode & { contains?: string[] }>;
+  elements: Record<string, InfrastructureElement>;
+  networks: Record<string, InfrastructureNetwork>;
 }
 
 interface NodePosition {
@@ -30,16 +34,15 @@ interface NodePosition {
 }
 
 function calculateNodePositions(
-  machines: Record<string, InfrastructureNode> = {},
-  databases: Record<string, InfrastructureNode> = {},
-  networks: Record<string, InfrastructureNode & { contains?: string[] }> = {}
+  elements: Record<string, InfrastructureElement> = {},
+  networks: Record<string, InfrastructureNetwork> = {}
 ): NodePosition[] {
   const positions: NodePosition[] = [];
   const SPACING = 200;
   const NETWORK_PADDING = 50;
   let currentY = 0;
 
-  // First, position machines and databases that are not in any network
+  // First, position elements that are not in any network
   const standaloneNodes = new Set<string>();
   const networkNodes = new Set<string>();
 
@@ -48,17 +51,8 @@ function calculateNodePositions(
     network.contains?.forEach((id) => networkNodes.add(id));
   });
 
-  // Position standalone machines
-  Object.keys(machines).forEach((id) => {
-    if (!networkNodes.has(id)) {
-      standaloneNodes.add(id);
-      positions.push({ id, x: 0, y: currentY });
-      currentY += SPACING;
-    }
-  });
-
-  // Position standalone databases
-  Object.keys(databases).forEach((id) => {
+  // Position standalone elements
+  Object.keys(elements).forEach((id) => {
     if (!networkNodes.has(id)) {
       standaloneNodes.add(id);
       positions.push({ id, x: 0, y: currentY });
@@ -115,8 +109,7 @@ export function parseInfrastructureText(text: string): {
 
   // Calculate positions for all nodes
   const positions = calculateNodePositions(
-    infrastructure.machines,
-    infrastructure.databases,
+    infrastructure.elements,
     infrastructure.networks
   );
 
@@ -125,22 +118,31 @@ export function parseInfrastructureText(text: string): {
     return positions.find((p) => p.id === id) || { id, x: 0, y: 0 };
   };
 
-  // Add machines (zIndex: 2)
-  Object.entries(infrastructure.machines || {}).forEach(([id, machine]) => {
+  // Add all elements
+  Object.entries(infrastructure.elements || {}).forEach(([id, element]) => {
     const pos = getPosition(id);
+    const nodeTypeMap = {
+      compute: "cloudMachine",
+      database: "cloudDatabase",
+      loadbalancer: "cloudLoadBalancer",
+    } as const;
+    const nodeType = nodeTypeMap[element.type as keyof typeof nodeTypeMap];
+
+    if (!nodeType) return; // Skip unknown types
+
     nodes.push({
       id,
-      type: "cloudMachine",
+      type: nodeType,
       position: { x: pos.x, y: pos.y },
       data: {
         label: id,
-        ...machine.specs,
+        ...element.specs,
       },
       zIndex: 2,
     });
 
     // Add connections
-    machine.connections?.forEach((connection) => {
+    element.connections?.forEach((connection) => {
       edges.push({
         id: `e${nodeId++}`,
         source: id,
@@ -150,22 +152,7 @@ export function parseInfrastructureText(text: string): {
     });
   });
 
-  // Add databases (zIndex: 2)
-  Object.entries(infrastructure.databases || {}).forEach(([id, database]) => {
-    const pos = getPosition(id);
-    nodes.push({
-      id,
-      type: "cloudDatabase",
-      position: { x: pos.x, y: pos.y },
-      data: {
-        label: id,
-        ...database.specs,
-      },
-      zIndex: 2,
-    });
-  });
-
-  // Add networks (zIndex: -1 to always be at the back)
+  // Add networks
   Object.entries(infrastructure.networks || {}).forEach(([id, network]) => {
     const pos = getPosition(id);
     nodes.push({
@@ -196,8 +183,7 @@ export function generateInfrastructureText(
   edges: Edge[]
 ): string {
   const infrastructure: Infrastructure = {
-    machines: {},
-    databases: {},
+    elements: {},
     networks: {},
   };
 
@@ -231,25 +217,31 @@ export function generateInfrastructureText(
   // Group nodes by type
   nodes.forEach((node) => {
     const { id, type, data } = node;
+    if (!type) return; // Skip nodes without a type
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { label, ...specs } = data;
 
-    if (type === "cloudMachine") {
-      infrastructure.machines![id] = {
-        type: "compute",
-        specs,
-      };
-    } else if (type === "cloudDatabase") {
-      infrastructure.databases![id] = {
-        type: "database",
-        specs,
-      };
-    } else if (type === "cloudNetwork") {
-      infrastructure.networks![id] = {
-        type: "network",
+    if (type === "cloudNetwork") {
+      infrastructure.networks[id] = {
         specs,
         contains: getContainedNodes(node),
       };
+    } else {
+      const elementTypeMap = {
+        cloudMachine: "compute",
+        cloudDatabase: "database",
+        cloudLoadBalancer: "loadbalancer",
+      } as const;
+      type NodeType = keyof typeof elementTypeMap;
+
+      if (type in elementTypeMap) {
+        const elementType = elementTypeMap[type as NodeType];
+        infrastructure.elements[id] = {
+          type: elementType,
+          specs,
+        };
+      }
     }
   });
 
@@ -257,25 +249,22 @@ export function generateInfrastructureText(
   edges.forEach((edge) => {
     const { source, target } = edge;
     const edgeLabel = typeof edge.label === "string" ? edge.label : undefined;
+    const sourceElement = infrastructure.elements[source];
 
-    // Only process regular connections (not containment)
-    const sourceNode = infrastructure.machines?.[source];
-    if (sourceNode) {
-      if (!sourceNode.connections) sourceNode.connections = [];
-      sourceNode.connections.push({
-        to: target,
-        port: edgeLabel ? parseInt(edgeLabel.replace("Port ", "")) : undefined,
-      });
-    }
+    // Skip if source doesn't exist or is a network (networks don't have connections)
+    if (!sourceElement) return;
+
+    // Initialize connections array if it doesn't exist
+    if (!sourceElement.connections) sourceElement.connections = [];
+
+    // Add the connection with appropriate port
+    sourceElement.connections.push({
+      to: target,
+      ...(edgeLabel && {
+        port: parseInt(edgeLabel.replace("Port ", "")),
+      }),
+    });
   });
-
-  // Clean up empty sections
-  if (Object.keys(infrastructure.machines!).length === 0)
-    delete infrastructure.machines;
-  if (Object.keys(infrastructure.databases!).length === 0)
-    delete infrastructure.databases;
-  if (Object.keys(infrastructure.networks!).length === 0)
-    delete infrastructure.networks;
 
   return yaml.stringify(infrastructure);
 }

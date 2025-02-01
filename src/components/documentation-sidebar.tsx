@@ -19,8 +19,8 @@ const sections = [
     title: "Text Format",
     content: (
       <p className="text-sm text-slate-500 dark:text-slate-400">
-        Use YAML to describe your infrastructure. Define machines, databases,
-        and networks.
+        Use YAML to describe your infrastructure. Define compute resources under
+        &quot;elements&quot; and network topology under &quot;networks&quot;.
       </p>
     ),
   },
@@ -28,17 +28,16 @@ const sections = [
     title: "Example",
     content: (
       <pre className="text-xs p-4 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
-        {`machines:
-  web-server:
+        {`elements:
+  web-server-1:
     type: compute
-    connections:
-      - to: database
-        port: 5432
     specs:
       cpu: 2
       memory: 4GB
+    connections:
+      - to: database
+        port: 5432
 
-databases:
   database:
     type: database
     specs:
@@ -48,107 +47,112 @@ databases:
 
 networks:
   main-vpc:
-    type: network
     specs:
       cidr: 10.0.0.0/16
     contains:
-      - web-server
+      - web-server-1
       - database`}
       </pre>
     ),
   },
   {
-    title: "Machines",
+    title: "Elements",
     content: (
-      <div className="space-y-2">
-        <p>Define compute instances with the following attributes:</p>
-        <div className="pl-4 space-y-1">
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              type: compute
-            </code>{" "}
-            (required)
-          </p>
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              specs:
-            </code>
-          </p>
+      <div className="space-y-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Elements represent compute resources like machines, databases, and
+          load balancers. Each element has a type, specs, and optional
+          connections.
+        </p>
+
+        <div>
+          <h4 className="font-medium mb-2">Compute (type: compute)</h4>
           <div className="pl-4 space-y-1">
             <p>
               <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                cpu: number
-              </code>{" "}
-              - Number of CPU cores
+                specs:
+              </code>
             </p>
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                memory: string
-              </code>{" "}
-              - Memory size (e.g., &quot;4GB&quot;, &quot;8GB&quot;)
-            </p>
-          </div>
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              connections:
-            </code>{" "}
-            (optional)
-          </p>
-          <div className="pl-4 space-y-1">
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                to: string
-              </code>{" "}
-              - Target node ID
-            </p>
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                port: number
-              </code>{" "}
-              - Connection port (optional)
-            </p>
+            <div className="pl-4 space-y-1">
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  cpu: number
+                </code>{" "}
+                - Number of CPU cores
+              </p>
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  memory: string
+                </code>{" "}
+                - Memory size (e.g., &quot;4GB&quot;, &quot;8GB&quot;)
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    title: "Databases",
-    content: (
-      <div className="space-y-2">
-        <p>Define database instances with the following attributes:</p>
-        <div className="pl-4 space-y-1">
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              type: database
-            </code>{" "}
-            (required)
-          </p>
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              specs:
-            </code>
-          </p>
+
+        <div>
+          <h4 className="font-medium mb-2">Database (type: database)</h4>
           <div className="pl-4 space-y-1">
             <p>
               <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                engine: string
-              </code>{" "}
-              - Database engine (e.g., &quot;postgresql&quot;,
-              &quot;mysql&quot;)
+                specs:
+              </code>
             </p>
+            <div className="pl-4 space-y-1">
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  engine: string
+                </code>{" "}
+                - Database engine (e.g., &quot;postgresql&quot;,
+                &quot;mysql&quot;)
+              </p>
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  version: string
+                </code>{" "}
+                - Engine version
+              </p>
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  storage: string
+                </code>{" "}
+                - Storage size (e.g., &quot;100GB&quot;)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="font-medium mb-2">
+            Load Balancer (type: loadbalancer)
+          </h4>
+          <div className="pl-4 space-y-1">
             <p>
               <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                version: string
-              </code>{" "}
-              - Engine version
+                specs:
+              </code>
             </p>
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                storage: string
-              </code>{" "}
-              - Storage size (e.g., &quot;100GB&quot;)
-            </p>
+            <div className="pl-4 space-y-1">
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  protocol: string
+                </code>{" "}
+                - Protocol (e.g., &quot;http&quot;, &quot;tcp&quot;)
+              </p>
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  port: number
+                </code>{" "}
+                - Listening port
+              </p>
+              <p>
+                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                  algorithm: string
+                </code>{" "}
+                - Load balancing algorithm (e.g., &quot;round-robin&quot;,
+                &quot;least-connections&quot;)
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -158,14 +162,11 @@ networks:
     title: "Networks",
     content: (
       <div className="space-y-2">
-        <p>Define networks with the following attributes:</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Networks define the topology of your infrastructure, grouping related
+          elements together.
+        </p>
         <div className="pl-4 space-y-1">
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              type: network
-            </code>{" "}
-            (required)
-          </p>
           <p>
             <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
               specs:
@@ -183,10 +184,39 @@ networks:
             <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
               contains:
             </code>{" "}
-            (optional)
+            - List of element IDs that belong to this network
           </p>
-          <div className="pl-4">
-            <p>List of node IDs that belong to this network</p>
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: "Connections",
+    content: (
+      <div className="space-y-2">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Elements can be connected to each other using connections. Networks
+          don&apos;t have connections, they contain elements.
+        </p>
+        <div className="pl-4 space-y-1">
+          <p>
+            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+              connections:
+            </code>
+          </p>
+          <div className="pl-4 space-y-1">
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                to: string
+              </code>{" "}
+              - Target element ID
+            </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                port: number
+              </code>{" "}
+              - Connection port (optional)
+            </p>
           </div>
         </div>
       </div>
