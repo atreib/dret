@@ -17,7 +17,8 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import Editor from "@monaco-editor/react";
+import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import {
   parseInfrastructureText,
@@ -74,6 +75,7 @@ function DiagramEditorContent() {
   const [text, setText] = React.useState(defaultInfrastructure);
   const [selectedNodeType, setSelectedNodeType] = React.useState<string>("");
   const { toast } = useToast();
+  const { theme } = useTheme();
   const reactFlowInstance = useReactFlow();
 
   // Load initial diagram
@@ -174,12 +176,9 @@ function DiagramEditorContent() {
     }
   }, [nodes, edges, toast]);
 
-  const handleTextChange = React.useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setText(e.target.value);
-    },
-    []
-  );
+  const handleTextChange = React.useCallback((value: string | undefined) => {
+    setText(value || "");
+  }, []);
 
   const addNode = React.useCallback(
     (type: string) => {
@@ -221,11 +220,21 @@ function DiagramEditorContent() {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100vh-10rem)]">
       <div className="rounded-lg flex flex-col">
         <div className="border flex-1">
-          <Textarea
+          <Editor
+            height="100%"
+            defaultLanguage="yaml"
+            theme={theme === "dark" ? "vs-dark" : "light"}
             value={text}
             onChange={handleTextChange}
-            placeholder="Enter your infrastructure description here..."
-            className="h-full font-mono resize-none border-0 rounded-none"
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+              lineNumbers: "on",
+              scrollBeyondLastLine: false,
+              wordWrap: "on",
+              wrappingIndent: "indent",
+              automaticLayout: true,
+            }}
           />
         </div>
         <div className="pt-2">
