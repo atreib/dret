@@ -24,7 +24,13 @@ export function CloudNetworkNode({
         isVisible={selected}
         minWidth={200}
         minHeight={100}
-        handleClassName="bg-slate-300 w-2 h-2"
+        handleStyle={{
+          width: "12px",
+          height: "12px",
+          borderRadius: "2px",
+          border: "2px solid #94a3b8",
+          background: "#e2e8f0",
+        }}
         lineClassName="border-slate-300"
       />
       <div
