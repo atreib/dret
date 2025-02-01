@@ -40,7 +40,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy } from "lucide-react";
+import { Copy, LayoutDashboard, PaintbrushIcon, TextIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const nodeTypes = {
   cloudMachine: CloudMachineNode,
@@ -273,6 +274,9 @@ function DiagramEditorContent() {
   const [edges, setEdges] = React.useState<Edge[]>([]);
   const [text, setText] = React.useState(defaultInfrastructure);
   const [selectedNodeType, setSelectedNodeType] = React.useState<string>("");
+  const [view, setView] = React.useState<"split" | "diagram" | "editor">(
+    "split"
+  );
   const { toast } = useToast();
   const { theme } = useTheme();
   const reactFlowInstance = useReactFlow();
@@ -472,84 +476,129 @@ function DiagramEditorContent() {
   }, [toast]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100vh-10rem)]">
-      <div className="rounded-lg flex flex-col">
-        <div className="border flex-1 relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-6 z-10"
-            onClick={handleCopy}
-          >
-            <Copy className="h-4 w-4" />
-            <span className="sr-only">Copy to clipboard</span>
-          </Button>
-          <Editor
-            height="100%"
-            defaultLanguage="yaml"
-            theme={theme === "dark" ? "vs-dark" : "light"}
-            value={text}
-            onChange={handleTextChange}
-            onMount={handleEditorDidMount}
-            options={{
-              minimap: { enabled: false },
-              fontSize: 14,
-              lineNumbers: "on",
-              scrollBeyondLastLine: false,
-              wordWrap: "on",
-              wrappingIndent: "indent",
-              automaticLayout: true,
-            }}
-          />
-        </div>
-        <div className="pt-2">
-          <Button variant="default" onClick={updateDiagram} className="w-full">
-            Update Diagram
-          </Button>
-        </div>
+    <div className="flex flex-col gap-4 h-[calc(100vh-10rem)]">
+      <div className="flex justify-end gap-2">
+        <Button
+          variant={view === "split" ? "default" : "outline"}
+          size="icon"
+          onClick={() => setView("split")}
+          title="Split View"
+        >
+          <LayoutDashboard className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={view === "diagram" ? "default" : "outline"}
+          size="icon"
+          onClick={() => setView("diagram")}
+          title="Diagram View"
+        >
+          <PaintbrushIcon className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={view === "editor" ? "default" : "outline"}
+          size="icon"
+          onClick={() => setView("editor")}
+          title="Editor View"
+        >
+          <TextIcon className="h-4 w-4" />
+        </Button>
       </div>
-      <div className="rounded-lg flex flex-col">
-        <div className="flex-1 border">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            nodeTypes={nodeTypes}
-            onNodesDelete={updateText}
-            onEdgesDelete={updateText}
-            fitView
-          >
-            <div className="absolute top-2 right-2 z-10">
-              <Select value={selectedNodeType} onValueChange={addNode}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Add node" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cloudMachine">Machine</SelectItem>
-                  <SelectItem value="cloudDatabase">Database</SelectItem>
-                  <SelectItem value="cloudNetwork">Network</SelectItem>
-                  <SelectItem value="cloudLoadBalancer">
-                    Load Balancer
-                  </SelectItem>
-                  <SelectItem value="cloudStorage">Storage</SelectItem>
-                  <SelectItem value="cloudQueue">Queue</SelectItem>
-                  <SelectItem value="cloudCdn">CDN</SelectItem>
-                  <SelectItem value="cloudApiGateway">API Gateway</SelectItem>
-                  <SelectItem value="cloudFirewall">Firewall</SelectItem>
-                </SelectContent>
-              </Select>
+      <div
+        className={cn(
+          "grid gap-4 flex-1",
+          view === "split" && "grid-cols-1 md:grid-cols-2",
+          view === "diagram" && "grid-cols-1",
+          view === "editor" && "grid-cols-1"
+        )}
+      >
+        {(view === "split" || view === "editor") && (
+          <div className="rounded-lg flex flex-col">
+            <div className="border flex-1 relative">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-6 z-10"
+                onClick={handleCopy}
+              >
+                <Copy className="h-4 w-4" />
+                <span className="sr-only">Copy to clipboard</span>
+              </Button>
+              <Editor
+                height="100%"
+                defaultLanguage="yaml"
+                theme={theme === "dark" ? "vs-dark" : "light"}
+                value={text}
+                onChange={handleTextChange}
+                onMount={handleEditorDidMount}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: "on",
+                  scrollBeyondLastLine: false,
+                  wordWrap: "on",
+                  wrappingIndent: "indent",
+                  automaticLayout: true,
+                }}
+              />
             </div>
-            <Background />
-            <Controls />
-          </ReactFlow>
-        </div>
-        <div className="pt-2">
-          <Button variant="default" onClick={updateText} className="w-full">
-            Update Text
-          </Button>
-        </div>
+            <div className="pt-2">
+              <Button
+                variant="default"
+                onClick={updateDiagram}
+                className="w-full"
+              >
+                Update Diagram
+              </Button>
+            </div>
+          </div>
+        )}
+        {(view === "split" || view === "diagram") && (
+          <div className="rounded-lg flex flex-col">
+            <div className="flex-1 border">
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                nodeTypes={nodeTypes}
+                onNodesDelete={updateText}
+                onEdgesDelete={updateText}
+                fitView
+              >
+                <div className="absolute top-2 right-2 z-10">
+                  <Select value={selectedNodeType} onValueChange={addNode}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Add node" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cloudMachine">Machine</SelectItem>
+                      <SelectItem value="cloudDatabase">Database</SelectItem>
+                      <SelectItem value="cloudNetwork">Network</SelectItem>
+                      <SelectItem value="cloudLoadBalancer">
+                        Load Balancer
+                      </SelectItem>
+                      <SelectItem value="cloudStorage">Storage</SelectItem>
+                      <SelectItem value="cloudQueue">Queue</SelectItem>
+                      <SelectItem value="cloudCdn">CDN</SelectItem>
+                      <SelectItem value="cloudApiGateway">
+                        API Gateway
+                      </SelectItem>
+                      <SelectItem value="cloudFirewall">Firewall</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Background />
+                <Controls />
+              </ReactFlow>
+            </div>
+            <div className="pt-2">
+              <Button variant="default" onClick={updateText} className="w-full">
+                Update Text
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
