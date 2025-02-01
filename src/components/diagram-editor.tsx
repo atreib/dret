@@ -33,7 +33,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
 
 const nodeTypes = {
   cloudMachine: CloudMachineNode,
@@ -220,46 +219,55 @@ function DiagramEditorContent() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100vh-10rem)]">
-      <div className="flex flex-col gap-4">
-        <Textarea
-          value={text}
-          onChange={handleTextChange}
-          placeholder="Enter your infrastructure description here..."
-          className="flex-1 font-mono"
-        />
-        <Button onClick={updateDiagram}>Update Diagram</Button>
+      <div className="rounded-lg flex flex-col">
+        <div className="border flex-1">
+          <Textarea
+            value={text}
+            onChange={handleTextChange}
+            placeholder="Enter your infrastructure description here..."
+            className="h-full font-mono resize-none border-0 rounded-none"
+          />
+        </div>
+        <div className="pt-2">
+          <Button variant="default" onClick={updateDiagram} className="w-full">
+            Update Diagram
+          </Button>
+        </div>
       </div>
-      <div className="border rounded-lg flex flex-col">
-        <div className="border-b p-2 flex items-center gap-2">
-          <Select value={selectedNodeType} onValueChange={addNode}>
-            <SelectTrigger className="w-[180px]">
-              <Plus className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Add node" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cloudMachine">Machine</SelectItem>
-              <SelectItem value="cloudDatabase">Database</SelectItem>
-              <SelectItem value="cloudNetwork">Network</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={updateText}>
+      <div className="rounded-lg flex flex-col">
+        <div className="flex-1 border">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            onNodesDelete={updateText}
+            onEdgesDelete={updateText}
+            fitView
+          >
+            <div className="absolute top-2 right-2 z-10">
+              <Select value={selectedNodeType} onValueChange={addNode}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Add node" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cloudMachine">Machine</SelectItem>
+                  <SelectItem value="cloudDatabase">Database</SelectItem>
+                  <SelectItem value="cloudNetwork">Network</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Background />
+            <Controls />
+          </ReactFlow>
+        </div>
+        <div className="pt-2">
+          <Button variant="default" onClick={updateText} className="w-full">
             Update Text
           </Button>
         </div>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          onNodesDelete={updateText}
-          onEdgesDelete={updateText}
-          fitView
-        >
-          <Background />
-          <Controls />
-        </ReactFlow>
       </div>
     </div>
   );
