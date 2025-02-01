@@ -9,6 +9,12 @@ type ExtendedNode = Node & {
 interface InfrastructureElement {
   type: string;
   specs?: Record<string, unknown>;
+  metadata?: {
+    position: {
+      x: number;
+      y: number;
+    };
+  };
   connections?: Array<{
     to: string;
     port?: number;
@@ -18,6 +24,16 @@ interface InfrastructureElement {
 interface InfrastructureNetwork {
   specs?: Record<string, unknown>;
   contains?: string[];
+  metadata?: {
+    position: {
+      x: number;
+      y: number;
+    };
+    size?: {
+      width: number;
+      height: number;
+    };
+  };
 }
 
 interface Infrastructure {
@@ -120,7 +136,7 @@ export function parseInfrastructureText(text: string): {
 
   // Add all elements
   Object.entries(infrastructure.elements || {}).forEach(([id, element]) => {
-    const pos = getPosition(id);
+    const pos = element.metadata?.position || getPosition(id);
     const nodeTypeMap = {
       compute: "cloudMachine",
       database: "cloudDatabase",
@@ -159,14 +175,19 @@ export function parseInfrastructureText(text: string): {
 
   // Add networks
   Object.entries(infrastructure.networks || {}).forEach(([id, network]) => {
-    const pos = getPosition(id);
+    const calculatedPos = getPosition(id);
+    const pos = network.metadata?.position || calculatedPos;
     nodes.push({
       id,
       type: "cloudNetwork",
       position: { x: pos.x, y: pos.y },
       style: {
-        ...(pos.width && pos.height
-          ? { width: pos.width, height: pos.height }
+        ...(network.metadata?.size ||
+        (calculatedPos.width && calculatedPos.height)
+          ? {
+              width: network.metadata?.size?.width || calculatedPos.width,
+              height: network.metadata?.size?.height || calculatedPos.height,
+            }
           : {}),
         zIndex: -1,
       },
@@ -228,9 +249,25 @@ export function generateInfrastructureText(
     const { label, ...specs } = data;
 
     if (type === "cloudNetwork") {
+      const style = node.style as
+        | { width?: number; height?: number }
+        | undefined;
       infrastructure.networks[id] = {
         specs,
         contains: getContainedNodes(node),
+        metadata: {
+          position: {
+            x: Math.round(node.position.x),
+            y: Math.round(node.position.y),
+          },
+          ...(style?.width &&
+            style?.height && {
+              size: {
+                width: Math.round(style.width),
+                height: Math.round(style.height),
+              },
+            }),
+        },
       };
     } else {
       const elementTypeMap = {
@@ -250,6 +287,12 @@ export function generateInfrastructureText(
         infrastructure.elements[id] = {
           type: elementType,
           specs,
+          metadata: {
+            position: {
+              x: Math.round(node.position.x),
+              y: Math.round(node.position.y),
+            },
+          },
         };
       }
     }

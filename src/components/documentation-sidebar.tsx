@@ -96,6 +96,24 @@ const sections = [
         </div>
 
         <div className="space-y-2">
+          <h4 className="font-medium">Metadata</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            The metadata section stores visual layout information. This is used
+            to preserve node positions and sizes when switching between text and
+            diagram views:
+          </p>
+          <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
+            {`metadata:
+  position:        # position in the diagram
+    x: 100        # x coordinate
+    y: 200        # y coordinate
+  size:           # only for networks
+    width: 400    # network width
+    height: 300   # network height`}
+          </pre>
+        </div>
+
+        <div className="space-y-2">
           <h4 className="font-medium">Connections</h4>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Connect elements to each other using the connections array.
