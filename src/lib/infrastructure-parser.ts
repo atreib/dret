@@ -126,6 +126,10 @@ export function parseInfrastructureText(text: string): {
       database: "cloudDatabase",
       loadbalancer: "cloudLoadBalancer",
       storage: "cloudStorage",
+      queue: "cloudQueue",
+      cdn: "cloudCdn",
+      apigateway: "cloudApiGateway",
+      firewall: "cloudFirewall",
     } as const;
     const nodeType = nodeTypeMap[element.type as keyof typeof nodeTypeMap];
 
@@ -234,6 +238,10 @@ export function generateInfrastructureText(
         cloudDatabase: "database",
         cloudLoadBalancer: "loadbalancer",
         cloudStorage: "storage",
+        cloudQueue: "queue",
+        cloudCdn: "cdn",
+        cloudApiGateway: "apigateway",
+        cloudFirewall: "firewall",
       } as const;
       type NodeType = keyof typeof elementTypeMap;
 

@@ -49,6 +49,30 @@ const sections = [
               </code>{" "}
               - Object storage services (S3, Blob Storage)
             </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: queue
+              </code>{" "}
+              - Message queues and brokers (RabbitMQ, Kafka)
+            </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: cdn
+              </code>{" "}
+              - Content Delivery Networks for edge caching
+            </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: apigateway
+              </code>{" "}
+              - API Gateways for managing API endpoints
+            </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: firewall
+              </code>{" "}
+              - Firewalls and security groups for network security
+            </p>
           </div>
         </div>
 
@@ -63,7 +87,11 @@ const sections = [
   cpu: 2           # example for compute
   memory: "4GB"    # example for compute
   engine: "redis"  # example for database
-  protocol: "http" # example for loadbalancer`}
+  protocol: "http" # example for loadbalancer
+  type: "rabbitmq" # example for queue
+  origin: "example.com" # example for cdn
+  auth: ["jwt"]    # example for apigateway
+  inbound: ["80/tcp"] # example for firewall`}
           </pre>
         </div>
 

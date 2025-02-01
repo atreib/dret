@@ -29,6 +29,10 @@ import { CloudDatabaseNode } from "./nodes/cloud-database";
 import { CloudNetworkNode } from "./nodes/cloud-network";
 import { CloudLoadBalancerNode } from "./nodes/cloud-load-balancer";
 import { CloudStorageNode } from "./nodes/cloud-storage";
+import { CloudQueueNode } from "./nodes/cloud-queue";
+import { CloudCdnNode } from "./nodes/cloud-cdn";
+import { CloudApiGatewayNode } from "./nodes/cloud-api-gateway";
+import { CloudFirewallNode } from "./nodes/cloud-firewall";
 import {
   Select,
   SelectContent,
@@ -43,6 +47,10 @@ const nodeTypes = {
   cloudNetwork: CloudNetworkNode,
   cloudLoadBalancer: CloudLoadBalancerNode,
   cloudStorage: CloudStorageNode,
+  cloudQueue: CloudQueueNode,
+  cloudCdn: CloudCdnNode,
+  cloudApiGateway: CloudApiGatewayNode,
+  cloudFirewall: CloudFirewallNode,
 };
 
 const defaultInfrastructure = `# Example infrastructure
@@ -252,6 +260,26 @@ function DiagramEditorContent() {
             storage: "100GB",
             type: "object-store",
           }),
+          ...(type === "cloudQueue" && {
+            type: "rabbitmq",
+            retention: "24h",
+            throughput: "1000msg/s",
+          }),
+          ...(type === "cloudCdn" && {
+            origin: "example.com",
+            caching: "default",
+            locations: ["us", "eu", "asia"],
+          }),
+          ...(type === "cloudApiGateway" && {
+            auth: ["jwt", "api-key"],
+            rateLimit: "100/min",
+            endpoints: ["/api/v1"],
+          }),
+          ...(type === "cloudFirewall" && {
+            inbound: ["80/tcp", "443/tcp"],
+            outbound: ["all"],
+            default: "deny",
+          }),
         },
       };
 
@@ -315,6 +343,10 @@ function DiagramEditorContent() {
                     Load Balancer
                   </SelectItem>
                   <SelectItem value="cloudStorage">Storage</SelectItem>
+                  <SelectItem value="cloudQueue">Queue</SelectItem>
+                  <SelectItem value="cloudCdn">CDN</SelectItem>
+                  <SelectItem value="cloudApiGateway">API Gateway</SelectItem>
+                  <SelectItem value="cloudFirewall">Firewall</SelectItem>
                 </SelectContent>
               </Select>
             </div>
