@@ -8,7 +8,10 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { FileText } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
+import { SheetTrigger } from "@/components/ui/sheet";
 
 export function Navbar() {
   return (
@@ -34,6 +37,11 @@ export function Navbar() {
         </NavigationMenu>
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <nav className="flex items-center space-x-2">
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <FileText className="h-[1.2rem] w-[1.2rem]" />
+              </Button>
+            </SheetTrigger>
             <ModeToggle />
           </nav>
         </div>

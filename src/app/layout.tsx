@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
+import { DocumentationSidebar } from "@/components/documentation-sidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,7 +29,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="min-h-screen flex flex-col">
-            <Navbar />
+            <DocumentationSidebar>
+              <Navbar />
+            </DocumentationSidebar>
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
