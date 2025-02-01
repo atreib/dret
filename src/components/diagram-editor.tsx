@@ -17,7 +17,7 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Button } from "@/components/ui/button";
-import Editor from "@monaco-editor/react";
+import Editor, { type OnMount } from "@monaco-editor/react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Copy } from "lucide-react";
 
 const nodeTypes = {
   cloudMachine: CloudMachineNode,
@@ -275,6 +276,7 @@ function DiagramEditorContent() {
   const { toast } = useToast();
   const { theme } = useTheme();
   const reactFlowInstance = useReactFlow();
+  const editorRef = React.useRef<Parameters<OnMount>[0] | null>(null);
 
   // Load initial diagram
   React.useEffect(() => {
@@ -443,16 +445,52 @@ function DiagramEditorContent() {
     [nodes, reactFlowInstance, updateText]
   );
 
+  const handleEditorDidMount: OnMount = React.useCallback((editor) => {
+    editorRef.current = editor;
+  }, []);
+
+  const handleCopy = React.useCallback(() => {
+    if (editorRef.current) {
+      const content = editorRef.current.getValue();
+      navigator.clipboard
+        .writeText(content)
+        .then(() => {
+          toast({
+            title: "Copied",
+            description: "Content copied to clipboard",
+          });
+        })
+        .catch((err) => {
+          console.error("Failed to copy:", err);
+          toast({
+            title: "Error",
+            description: "Failed to copy to clipboard",
+            variant: "destructive",
+          });
+        });
+    }
+  }, [toast]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100vh-10rem)]">
       <div className="rounded-lg flex flex-col">
-        <div className="border flex-1">
+        <div className="border flex-1 relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-6 z-10"
+            onClick={handleCopy}
+          >
+            <Copy className="h-4 w-4" />
+            <span className="sr-only">Copy to clipboard</span>
+          </Button>
           <Editor
             height="100%"
             defaultLanguage="yaml"
             theme={theme === "dark" ? "vs-dark" : "light"}
             value={text}
             onChange={handleTextChange}
+            onMount={handleEditorDidMount}
             options={{
               minimap: { enabled: false },
               fontSize: 14,
