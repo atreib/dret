@@ -73,6 +73,7 @@ function DiagramEditorContent() {
   const [nodes, setNodes] = React.useState<Node[]>([]);
   const [edges, setEdges] = React.useState<Edge[]>([]);
   const [text, setText] = React.useState(defaultInfrastructure);
+  const [selectedNodeType, setSelectedNodeType] = React.useState<string>("");
   const { toast } = useToast();
   const reactFlowInstance = useReactFlow();
 
@@ -212,6 +213,7 @@ function DiagramEditorContent() {
 
       setNodes((nds) => [...nds, newNode]);
       updateText();
+      setSelectedNodeType(""); // Reset the select after adding a node
     },
     [nodes, reactFlowInstance, updateText]
   );
@@ -229,7 +231,7 @@ function DiagramEditorContent() {
       </div>
       <div className="border rounded-lg flex flex-col">
         <div className="border-b p-2 flex items-center gap-2">
-          <Select onValueChange={addNode}>
+          <Select value={selectedNodeType} onValueChange={addNode}>
             <SelectTrigger className="w-[180px]">
               <Plus className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Add node" />
