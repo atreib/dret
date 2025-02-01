@@ -43,6 +43,12 @@ const sections = [
               </code>{" "}
               - Load balancers for traffic distribution
             </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: storage
+              </code>{" "}
+              - Object storage services (S3, Blob Storage)
+            </p>
           </div>
         </div>
 

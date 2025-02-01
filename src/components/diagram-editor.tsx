@@ -28,6 +28,7 @@ import { CloudMachineNode } from "./nodes/cloud-machine";
 import { CloudDatabaseNode } from "./nodes/cloud-database";
 import { CloudNetworkNode } from "./nodes/cloud-network";
 import { CloudLoadBalancerNode } from "./nodes/cloud-load-balancer";
+import { CloudStorageNode } from "./nodes/cloud-storage";
 import {
   Select,
   SelectContent,
@@ -41,6 +42,7 @@ const nodeTypes = {
   cloudDatabase: CloudDatabaseNode,
   cloudNetwork: CloudNetworkNode,
   cloudLoadBalancer: CloudLoadBalancerNode,
+  cloudStorage: CloudStorageNode,
 };
 
 const defaultInfrastructure = `# Example infrastructure
@@ -246,6 +248,10 @@ function DiagramEditorContent() {
             port: 80,
             algorithm: "round-robin",
           }),
+          ...(type === "cloudStorage" && {
+            storage: "100GB",
+            type: "object-store",
+          }),
         },
       };
 
@@ -308,6 +314,7 @@ function DiagramEditorContent() {
                   <SelectItem value="cloudLoadBalancer">
                     Load Balancer
                   </SelectItem>
+                  <SelectItem value="cloudStorage">Storage</SelectItem>
                 </SelectContent>
               </Select>
             </div>

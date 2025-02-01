@@ -1,36 +1,157 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cloud Text2Diagram
+
+A modern web application that converts cloud infrastructure text descriptions into interactive diagrams and vice versa. Built with Next.js, React Flow, and TypeScript.
+
+![Cloud Text2Diagram Demo](docs/demo.gif)
+
+## Features
+
+- 🔄 Bidirectional conversion between YAML and diagrams
+- 🎨 Interactive diagram editor with drag-and-drop interface
+- 📝 Real-time YAML editor with syntax highlighting
+- 🌙 Dark/Light mode support
+- 🎯 Snap-to-grid and auto-layout functionality
+- 🔌 Support for various cloud infrastructure elements
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18.x or later
+- npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/cloud-text2diagram.git
+
+# Navigate to the project directory
+cd cloud-text2diagram
+
+# Install dependencies
+npm install
+# or
+yarn install
+
+# Start the development server
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000` to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### YAML Format
 
-## Learn More
+The application uses a simple YAML format to describe cloud infrastructure:
 
-To learn more about Next.js, take a look at the following resources:
+```yaml
+elements:
+  web-server:
+    type: compute
+    specs:
+      cpu: 2
+      memory: "4GB"
+    connections:
+      - to: database
+        port: 5432
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+networks:
+  main-vpc:
+    specs:
+      cidr: "10.0.0.0/16"
+    contains:
+      - web-server
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Available Element Types
 
-## Deploy on Vercel
+- **Compute** (`type: compute`): Virtual machines or servers
+- **Database** (`type: database`): Database instances
+- **Load Balancer** (`type: loadbalancer`): Traffic distribution
+- **Storage** (`type: storage`): Object storage services
+- **Network** (network container): Groups related elements
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Developer Guide
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Adding New Element Types
+
+To add a new element type to the infrastructure diagram tool, follow these steps:
+
+1. **Create the Node Component**
+
+   ```typescript
+   // src/components/nodes/cloud-[type].tsx
+   "use client";
+   import { [IconName] } from "lucide-react";
+   import { CloudNodeShell, CloudNodeShellProps } from "./cloud-node-shell";
+
+   interface Cloud[Type]NodeProps {
+     data: {
+       label: string;
+     } & CloudNodeShellProps["specs"];
+   }
+
+   export function Cloud[Type]Node({
+     data: { label, ...specs },
+   }: Cloud[Type]NodeProps) {
+     return <CloudNodeShell label={label} icon={[IconName]} specs={specs} />;
+   }
+   ```
+
+2. **Register the Node Type in diagram-editor.tsx**
+
+   - Import the component
+   - Add to nodeTypes object
+   - Add to the Select dropdown
+   - Add default data in the addNode callback
+
+3. **Update Infrastructure Parser**
+
+   - Add type mapping in parseInfrastructureText
+   - Add type mapping in generateInfrastructureText
+
+4. **Update Documentation**
+   - Add element type description in documentation-sidebar.tsx
+
+### Project Structure
+
+```
+src/
+├── app/                 # Next.js app router
+├── components/
+│   ├── nodes/          # Cloud infrastructure node components
+│   ├── ui/             # Reusable UI components
+│   └── ...
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions and parsers
+└── styles/             # Global styles
+```
+
+## Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [React Flow](https://reactflow.dev/) for the diagram functionality
+- [shadcn/ui](https://ui.shadcn.com/) for the beautiful UI components
+- [Next.js](https://nextjs.org/) for the React framework
+- [Monaco Editor](https://microsoft.github.io/monaco-editor/) for the YAML editing experience
+
+---
+
+Built with ❤️ by [Your Name]
