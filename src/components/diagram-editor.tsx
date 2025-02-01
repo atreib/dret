@@ -12,6 +12,8 @@ import ReactFlow, {
   addEdge,
   applyNodeChanges,
   applyEdgeChanges,
+  useReactFlow,
+  ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,20 @@ import {
 import { CloudMachineNode } from "./nodes/cloud-machine";
 import { CloudDatabaseNode } from "./nodes/cloud-database";
 import { CloudNetworkNode } from "./nodes/cloud-network";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus } from "lucide-react";
+
+const nodeTypes = {
+  cloudMachine: CloudMachineNode,
+  cloudDatabase: CloudDatabaseNode,
+  cloudNetwork: CloudNetworkNode,
+};
 
 const defaultInfrastructure = `# Example infrastructure
 machines:
@@ -53,17 +69,12 @@ networks:
       - web-server
       - database`;
 
-const nodeTypes = {
-  cloudMachine: CloudMachineNode,
-  cloudDatabase: CloudDatabaseNode,
-  cloudNetwork: CloudNetworkNode,
-};
-
-export function DiagramEditor() {
+function DiagramEditorContent() {
   const [nodes, setNodes] = React.useState<Node[]>([]);
   const [edges, setEdges] = React.useState<Edge[]>([]);
   const [text, setText] = React.useState(defaultInfrastructure);
   const { toast } = useToast();
+  const reactFlowInstance = useReactFlow();
 
   // Load initial diagram
   React.useEffect(() => {
@@ -170,6 +181,41 @@ export function DiagramEditor() {
     []
   );
 
+  const addNode = React.useCallback(
+    (type: string) => {
+      const nodeId = `${type}-${nodes.length + 1}`;
+      const position = reactFlowInstance.project({
+        x: Math.random() * 500,
+        y: Math.random() * 500,
+      });
+
+      const newNode: Node = {
+        id: nodeId,
+        type: type,
+        position,
+        data: {
+          label: nodeId,
+          ...(type === "cloudMachine" && {
+            cpu: 1,
+            memory: "1GB",
+          }),
+          ...(type === "cloudDatabase" && {
+            engine: "postgresql",
+            version: "14",
+            storage: "10GB",
+          }),
+          ...(type === "cloudNetwork" && {
+            cidr: "10.0.0.0/16",
+          }),
+        },
+      };
+
+      setNodes((nds) => [...nds, newNode]);
+      updateText();
+    },
+    [nodes, reactFlowInstance, updateText]
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[calc(100vh-10rem)]">
       <div className="flex flex-col gap-4">
@@ -181,7 +227,23 @@ export function DiagramEditor() {
         />
         <Button onClick={updateDiagram}>Update Diagram</Button>
       </div>
-      <div className="border rounded-lg">
+      <div className="border rounded-lg flex flex-col">
+        <div className="border-b p-2 flex items-center gap-2">
+          <Select onValueChange={addNode}>
+            <SelectTrigger className="w-[180px]">
+              <Plus className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Add node" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cloudMachine">Machine</SelectItem>
+              <SelectItem value="cloudDatabase">Database</SelectItem>
+              <SelectItem value="cloudNetwork">Network</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" onClick={updateText}>
+            Update Text
+          </Button>
+        </div>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -198,5 +260,13 @@ export function DiagramEditor() {
         </ReactFlow>
       </div>
     </div>
+  );
+}
+
+export function DiagramEditor() {
+  return (
+    <ReactFlowProvider>
+      <DiagramEditorContent />
+    </ReactFlowProvider>
   );
 }
