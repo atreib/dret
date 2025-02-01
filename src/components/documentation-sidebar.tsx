@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 
 interface DocumentationSidebarProps {
   children: React.ReactNode;
@@ -16,12 +13,105 @@ interface DocumentationSidebarProps {
 
 const sections = [
   {
-    title: "Text Format",
+    title: "Elements",
     content: (
-      <p className="text-sm text-slate-500 dark:text-slate-400">
-        Use YAML to describe your infrastructure. Define compute resources under
-        &quot;elements&quot; and network topology under &quot;networks&quot;.
-      </p>
+      <div className="space-y-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Elements are the building blocks of your infrastructure. Each element
+          has a type, customizable specs, and optional connections to other
+          elements.
+        </p>
+
+        <div className="space-y-2">
+          <h4 className="font-medium">Available Types</h4>
+          <div className="pl-4 space-y-2">
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: compute
+              </code>{" "}
+              - Compute instances like VMs or servers
+            </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: database
+              </code>{" "}
+              - Database instances (PostgreSQL, Redis, etc.)
+            </p>
+            <p>
+              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
+                type: loadbalancer
+              </code>{" "}
+              - Load balancers for traffic distribution
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-medium">Specs</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            The specs section accepts any key-value pairs. Use it to define
+            properties specific to your element:
+          </p>
+          <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
+            {`specs:
+  cpu: 2           # example for compute
+  memory: "4GB"    # example for compute
+  engine: "redis"  # example for database
+  protocol: "http" # example for loadbalancer`}
+          </pre>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-medium">Connections</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Connect elements to each other using the connections array.
+            Optionally specify a port to label the connection:
+          </p>
+          <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
+            {`connections:
+  - to: database    # basic connection
+    port: 5432      # optional port number
+  - to: cache       # multiple connections
+    port: 6379      # are supported`}
+          </pre>
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: "Networks",
+    content: (
+      <div className="space-y-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Networks define the topology of your infrastructure by grouping
+          related elements together.
+        </p>
+
+        <div className="space-y-2">
+          <h4 className="font-medium">Network Specs</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Networks only accept CIDR range in their specs:
+          </p>
+          <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
+            {`specs:
+  cidr: "10.0.0.0/16"  # required CIDR range`}
+          </pre>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="font-medium">Contains</h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Use the contains array to specify which elements belong to this
+            network:
+          </p>
+          <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
+            {`contains:
+  - web-server
+  - database
+  - cache`}
+          </pre>
+        </div>
+      </div>
     ),
   },
   {
@@ -29,11 +119,11 @@ const sections = [
     content: (
       <pre className="text-xs p-4 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
         {`elements:
-  web-server-1:
+  web-server:
     type: compute
     specs:
       cpu: 2
-      memory: 4GB
+      memory: "4GB"
     connections:
       - to: database
         port: 5432
@@ -43,194 +133,21 @@ const sections = [
     specs:
       engine: postgresql
       version: "14"
-      storage: 100GB
+      storage: "100GB"
 
 networks:
   main-vpc:
     specs:
-      cidr: 10.0.0.0/16
+      cidr: "10.0.0.0/16"
     contains:
-      - web-server-1
+      - web-server
       - database`}
       </pre>
-    ),
-  },
-  {
-    title: "Elements",
-    content: (
-      <div className="space-y-4">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Elements represent compute resources like machines, databases, and
-          load balancers. Each element has a type, specs, and optional
-          connections.
-        </p>
-
-        <div>
-          <h4 className="font-medium mb-2">Compute (type: compute)</h4>
-          <div className="pl-4 space-y-1">
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                specs:
-              </code>
-            </p>
-            <div className="pl-4 space-y-1">
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  cpu: number
-                </code>{" "}
-                - Number of CPU cores
-              </p>
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  memory: string
-                </code>{" "}
-                - Memory size (e.g., &quot;4GB&quot;, &quot;8GB&quot;)
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h4 className="font-medium mb-2">Database (type: database)</h4>
-          <div className="pl-4 space-y-1">
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                specs:
-              </code>
-            </p>
-            <div className="pl-4 space-y-1">
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  engine: string
-                </code>{" "}
-                - Database engine (e.g., &quot;postgresql&quot;,
-                &quot;mysql&quot;)
-              </p>
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  version: string
-                </code>{" "}
-                - Engine version
-              </p>
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  storage: string
-                </code>{" "}
-                - Storage size (e.g., &quot;100GB&quot;)
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h4 className="font-medium mb-2">
-            Load Balancer (type: loadbalancer)
-          </h4>
-          <div className="pl-4 space-y-1">
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                specs:
-              </code>
-            </p>
-            <div className="pl-4 space-y-1">
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  protocol: string
-                </code>{" "}
-                - Protocol (e.g., &quot;http&quot;, &quot;tcp&quot;)
-              </p>
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  port: number
-                </code>{" "}
-                - Listening port
-              </p>
-              <p>
-                <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                  algorithm: string
-                </code>{" "}
-                - Load balancing algorithm (e.g., &quot;round-robin&quot;,
-                &quot;least-connections&quot;)
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Networks",
-    content: (
-      <div className="space-y-2">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Networks define the topology of your infrastructure, grouping related
-          elements together.
-        </p>
-        <div className="pl-4 space-y-1">
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              specs:
-            </code>
-          </p>
-          <div className="pl-4 space-y-1">
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                cidr: string
-              </code>{" "}
-              - Network CIDR range (e.g., &quot;10.0.0.0/16&quot;)
-            </p>
-          </div>
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              contains:
-            </code>{" "}
-            - List of element IDs that belong to this network
-          </p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    title: "Connections",
-    content: (
-      <div className="space-y-2">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Elements can be connected to each other using connections. Networks
-          don&apos;t have connections, they contain elements.
-        </p>
-        <div className="pl-4 space-y-1">
-          <p>
-            <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-              connections:
-            </code>
-          </p>
-          <div className="pl-4 space-y-1">
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                to: string
-              </code>{" "}
-              - Target element ID
-            </p>
-            <p>
-              <code className="text-xs bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">
-                port: number
-              </code>{" "}
-              - Connection port (optional)
-            </p>
-          </div>
-        </div>
-      </div>
     ),
   },
 ];
 
 export function DocumentationSidebar({ children }: DocumentationSidebarProps) {
-  const [search, setSearch] = useState("");
-
-  const filteredSections = sections.filter((section) =>
-    section.title.toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <Sheet>
       {children}
@@ -239,25 +156,8 @@ export function DocumentationSidebar({ children }: DocumentationSidebarProps) {
           <SheetTitle>Documentation</SheetTitle>
         </SheetHeader>
         <div className="space-y-6 pr-6 mt-6">
-          <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Learn how to describe your cloud infrastructure using our simple
-              text format.
-            </p>
-          </div>
-
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500 dark:text-slate-400" />
-            <Input
-              placeholder="Search documentation..."
-              className="pl-8"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-
           <div className="space-y-6">
-            {filteredSections.map((section) => (
+            {sections.map((section) => (
               <div key={section.title}>
                 <h3 className="font-medium mb-2">{section.title}</h3>
                 {section.content}
