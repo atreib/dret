@@ -32,7 +32,7 @@ export default function RootLayout({
             <DocumentationSidebar>
               <Navbar />
             </DocumentationSidebar>
-            <main className="flex-1">{children}</main>
+            <main className="flex-1 px-12">{children}</main>
             <Footer />
           </div>
           <Toaster />

@@ -5,7 +5,7 @@ import { DocumentationSidebar } from "@/components/documentation-sidebar";
 
 export default function HomePage() {
   return (
-    <div className="container py-8">
+    <div className="py-8">
       <DiagramEditor />
       <DocumentationSidebar />
     </div>
