@@ -129,7 +129,7 @@ export function SaveDiagramDialog({
       <DialogTrigger asChild>
         <Button>
           <SaveIcon className="h-4 w-4 mr-2" />
-          Save as New Project
+          Create New Project
         </Button>
       </DialogTrigger>
       <DialogContent>
