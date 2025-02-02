@@ -40,14 +40,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Copy,
-  LayoutDashboard,
-  PaintbrushIcon,
-  SaveIcon,
-  TextIcon,
-} from "lucide-react";
+import { Copy, LayoutDashboard, PaintbrushIcon, TextIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SaveDiagramDialog } from "./save-diagram-dialog";
+import { diagramRepository } from "@/lib/db/models/diagram";
 
 const nodeTypes = {
   cloudMachine: CloudMachineNode,
@@ -275,10 +271,15 @@ networks:
         width: 632
         height: 616`;
 
-function DiagramEditorContent() {
+interface DiagramEditorProps {
+  projectId?: string;
+}
+
+function DiagramEditorContent({ projectId }: DiagramEditorProps) {
   const [nodes, setNodes] = React.useState<Node[]>([]);
   const [edges, setEdges] = React.useState<Edge[]>([]);
   const [text, setText] = React.useState(defaultInfrastructure);
+  const [projectName, setProjectName] = React.useState<string>("");
   const [selectedNodeType, setSelectedNodeType] = React.useState<string>("");
   const [view, setView] = React.useState<"split" | "diagram" | "editor">(
     "split"
@@ -288,25 +289,58 @@ function DiagramEditorContent() {
   const reactFlowInstance = useReactFlow();
   const editorRef = React.useRef<Parameters<OnMount>[0] | null>(null);
 
-  // Load initial diagram
+  // Load project data if projectId is provided
   React.useEffect(() => {
-    try {
-      const { nodes: initialNodes, edges: initialEdges } =
-        parseInfrastructureText(defaultInfrastructure);
-      setNodes(initialNodes);
-      setEdges(initialEdges);
-    } catch (err) {
-      console.error("Failed to load initial diagram:", err);
+    async function loadProject() {
+      if (!projectId) return;
+
+      const result = await diagramRepository.findById(projectId);
+      if (result._tag === "success" && result.value) {
+        setText(result.value.content);
+        setProjectName(result.value.name);
+        try {
+          const { nodes: initialNodes, edges: initialEdges } =
+            parseInfrastructureText(result.value.content);
+          setNodes(initialNodes);
+          setEdges(initialEdges);
+        } catch (err) {
+          console.error("Failed to parse project content:", err);
+          toast({
+            title: "Error",
+            description: "Failed to load project content",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to load project",
+          variant: "destructive",
+        });
+      }
     }
-  }, []);
+
+    loadProject();
+  }, [projectId, toast]);
+
+  // Load initial diagram for new projects
+  React.useEffect(() => {
+    if (!projectId) {
+      try {
+        const { nodes: initialNodes, edges: initialEdges } =
+          parseInfrastructureText(defaultInfrastructure);
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+      } catch (err) {
+        console.error("Failed to load initial diagram:", err);
+      }
+    }
+  }, [projectId]);
 
   const onNodesChange = React.useCallback(
     (changes: NodeChange[]) => {
       setNodes((nds) => {
-        // First apply the changes
         const updatedNodes = applyNodeChanges(changes, nds);
-
-        // Then ensure networks stay at the back
         return updatedNodes.map((node) => {
           if (node.type === "cloudNetwork") {
             return { ...node, zIndex: -1 };
@@ -484,10 +518,12 @@ function DiagramEditorContent() {
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-10rem)]">
       <div className="flex justify-between items-center">
-        <Button title="Split View">
-          <SaveIcon className="h-4 w-4 mr-2" />
-          Save
-        </Button>
+        <SaveDiagramDialog
+          content={text}
+          projectId={projectId}
+          projectName={projectName}
+          onSaved={updateText}
+        />
         <div className="flex justify-end items-center gap-2">
           <Button
             variant={view === "split" ? "default" : "outline"}
@@ -616,10 +652,12 @@ function DiagramEditorContent() {
   );
 }
 
-export function DiagramEditor() {
+export function DiagramEditor({ projectId }: DiagramEditorProps) {
   return (
-    <ReactFlowProvider>
-      <DiagramEditorContent />
-    </ReactFlowProvider>
+    <main className="py-12">
+      <ReactFlowProvider>
+        <DiagramEditorContent projectId={projectId} />
+      </ReactFlowProvider>
+    </main>
   );
 }
