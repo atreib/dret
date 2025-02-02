@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { Result } from "./result";
 
 export interface Repository<T, K = string> {
@@ -7,12 +6,6 @@ export interface Repository<T, K = string> {
   delete(key: K): Promise<Result<void, DatabaseError>>;
   findById(key: K): Promise<Result<T | null, DatabaseError>>;
   findAll(): Promise<Result<T[], DatabaseError>>;
-}
-
-export interface RepositoryOptions<T> {
-  storeName: string;
-  schema: z.ZodType<T>;
-  version?: number;
 }
 
 export class DatabaseError extends Error {
