@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Folder, Pencil } from "lucide-react";
+import { Folder, Pencil, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -135,6 +135,74 @@ function EditProjectNameDialog({
   );
 }
 
+interface DeleteProjectDialogProps {
+  projectId: string;
+  projectName: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDeleted: () => void;
+}
+
+function DeleteProjectDialog({
+  projectId,
+  projectName,
+  open,
+  onOpenChange,
+  onDeleted,
+}: DeleteProjectDialogProps) {
+  const { toast } = useToast();
+
+  const handleDelete = async () => {
+    try {
+      const result = await diagramRepository.delete(projectId);
+
+      if (result._tag === "failure") {
+        throw new Error(result.error.message);
+      }
+
+      toast({
+        title: "Success",
+        description: "Project deleted successfully",
+      });
+      onOpenChange(false);
+      onDeleted();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete project",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Project</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete &ldquo;{projectName}&rdquo;? This
+            action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
+          <Button type="button" variant="destructive" onClick={handleDelete}>
+            Delete Project
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function ProjectsSheet() {
   const [projects, setProjects] = React.useState<
     Array<{
@@ -144,6 +212,10 @@ export function ProjectsSheet() {
     }>
   >([]);
   const [editingProject, setEditingProject] = React.useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [deletingProject, setDeletingProject] = React.useState<{
     id: string;
     name: string;
   } | null>(null);
@@ -211,19 +283,34 @@ export function ProjectsSheet() {
                       </span>
                     </div>
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      setEditingProject({
-                        id: project.id,
-                        name: project.name,
-                      })
-                    }
-                  >
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit project name</span>
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        setEditingProject({
+                          id: project.id,
+                          name: project.name,
+                        })
+                      }
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit project name</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        setDeletingProject({
+                          id: project.id,
+                          name: project.name,
+                        })
+                      }
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <span className="sr-only">Delete project</span>
+                    </Button>
+                  </div>
                 </div>
               ))
             )}
@@ -239,6 +326,17 @@ export function ProjectsSheet() {
             if (!open) setEditingProject(null);
           }}
           onSaved={loadProjects}
+        />
+      )}
+      {deletingProject && (
+        <DeleteProjectDialog
+          projectId={deletingProject.id}
+          projectName={deletingProject.name}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setDeletingProject(null);
+          }}
+          onDeleted={loadProjects}
         />
       )}
     </Sheet>
