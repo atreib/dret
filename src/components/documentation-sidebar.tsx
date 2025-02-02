@@ -5,11 +5,10 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
-
-interface DocumentationSidebarProps {
-  children: React.ReactNode;
-}
+import { Button } from "./ui/button";
+import { FileText } from "lucide-react";
 
 const sections = [
   {
@@ -199,10 +198,15 @@ networks:
   },
 ];
 
-export function DocumentationSidebar({ children }: DocumentationSidebarProps) {
+export function DocumentationSidebar() {
   return (
     <Sheet>
-      {children}
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <FileText className="h-[1.2rem] w-[1.2rem]" />
+          <span className="sr-only">Open documentation</span>
+        </Button>
+      </SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Documentation</SheetTitle>
