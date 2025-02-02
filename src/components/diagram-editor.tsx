@@ -40,7 +40,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, LayoutDashboard, PaintbrushIcon, TextIcon } from "lucide-react";
+import {
+  Copy,
+  LayoutDashboard,
+  PaintbrushIcon,
+  SaveIcon,
+  TextIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nodeTypes = {
@@ -477,31 +483,37 @@ function DiagramEditorContent() {
 
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-10rem)]">
-      <div className="flex justify-end gap-2">
-        <Button
-          variant={view === "split" ? "default" : "outline"}
-          size="icon"
-          onClick={() => setView("split")}
-          title="Split View"
-        >
-          <LayoutDashboard className="h-4 w-4" />
+      <div className="flex justify-between items-center">
+        <Button title="Split View">
+          <SaveIcon className="h-4 w-4 mr-2" />
+          Save
         </Button>
-        <Button
-          variant={view === "diagram" ? "default" : "outline"}
-          size="icon"
-          onClick={() => setView("diagram")}
-          title="Diagram View"
-        >
-          <PaintbrushIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          variant={view === "editor" ? "default" : "outline"}
-          size="icon"
-          onClick={() => setView("editor")}
-          title="Editor View"
-        >
-          <TextIcon className="h-4 w-4" />
-        </Button>
+        <div className="flex justify-end items-center gap-2">
+          <Button
+            variant={view === "split" ? "default" : "outline"}
+            size="icon"
+            onClick={() => setView("split")}
+            title="Split View"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={view === "diagram" ? "default" : "outline"}
+            size="icon"
+            onClick={() => setView("diagram")}
+            title="Diagram View"
+          >
+            <PaintbrushIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant={view === "editor" ? "default" : "outline"}
+            size="icon"
+            onClick={() => setView("editor")}
+            title="Editor View"
+          >
+            <TextIcon className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <div
         className={cn(
