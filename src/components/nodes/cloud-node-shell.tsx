@@ -2,6 +2,7 @@
 
 import { Handle, NodeProps, Position } from "reactflow";
 import { LucideIcon } from "lucide-react";
+import { NodeSpecsDialog } from "./node-specs-dialog";
 
 export type CloudNodeShellProps = NodeProps<{
   label: string;
@@ -11,6 +12,7 @@ export type CloudNodeShellProps = NodeProps<{
 };
 
 export function CloudNodeShell({
+  id,
   data: { label, ...specs },
   icon: Icon,
   color = "#64748b", // default slate-500 color
@@ -25,9 +27,12 @@ export function CloudNodeShell({
         position={Position.Top}
         style={{ background: color }}
       />
-      <div className="flex items-center gap-2 text-sm font-medium text-slate-900 dark:text-slate-100">
-        <Icon className="h-4 w-4" style={{ color }} />
-        <span>{label}</span>
+      <div className="flex items-center justify-between gap-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4" style={{ color }} />
+          <span>{label}</span>
+        </div>
+        <NodeSpecsDialog nodeId={id} />
       </div>
       <div className="mt-2 text-xs space-y-1 text-slate-500 dark:text-slate-400">
         {specs &&
