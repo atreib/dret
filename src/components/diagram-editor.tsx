@@ -313,7 +313,13 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
           try {
             const { nodes: initialNodes, edges: initialEdges } =
               parseInfrastructureText(result.value.content);
-            setNodes(initialNodes);
+            setNodes(
+              initialNodes.map((node) => ({
+                ...node,
+                draggable: node.type !== "cloudNetwork",
+                selectable: node.type !== "cloudNetwork",
+              }))
+            );
             setEdges(initialEdges);
           } catch (err) {
             console.error("Failed to parse project content:", err);
@@ -352,7 +358,13 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         const { nodes: initialNodes, edges: initialEdges } =
           parseInfrastructureText(defaultInfrastructure);
         setText(defaultInfrastructure);
-        setNodes(initialNodes);
+        setNodes(
+          initialNodes.map((node) => ({
+            ...node,
+            draggable: node.type !== "cloudNetwork",
+            selectable: node.type !== "cloudNetwork",
+          }))
+        );
         setEdges(initialEdges);
       } catch (err) {
         console.error("Failed to load initial diagram:", err);
@@ -402,7 +414,13 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
     try {
       const { nodes: newNodes, edges: newEdges } =
         parseInfrastructureText(text);
-      setNodes(newNodes);
+      setNodes(
+        newNodes.map((node) => ({
+          ...node,
+          draggable: node.type !== "cloudNetwork",
+          selectable: node.type !== "cloudNetwork",
+        }))
+      );
       setEdges(newEdges);
       toast({
         title: "Success",
@@ -459,6 +477,8 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         id: nodeId,
         type: type,
         position,
+        draggable: type !== "cloudNetwork",
+        selectable: type !== "cloudNetwork",
         data: {
           label: nodeId,
           ...(type === "cloudMachine" && {

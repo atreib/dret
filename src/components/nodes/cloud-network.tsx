@@ -1,27 +1,60 @@
 "use client";
 
-import { Network } from "lucide-react";
+import { Network, Lock, Unlock } from "lucide-react";
 import { NodeResizer } from "@reactflow/node-resizer";
 import "@reactflow/node-resizer/dist/style.css";
+import { useState, useCallback } from "react";
+import { useReactFlow } from "reactflow";
 
 interface CloudNetworkNodeProps {
+  id: string;
   data: {
     label: string;
     cidr?: string;
+    isInteractive?: boolean;
   };
   style?: React.CSSProperties;
   selected?: boolean;
+  draggable?: boolean;
 }
 
 export function CloudNetworkNode({
+  id,
   data,
   style,
   selected,
 }: CloudNetworkNodeProps) {
+  const [isInteractive, setIsInteractive] = useState(
+    data.isInteractive ?? false
+  );
+  const { setNodes } = useReactFlow();
+
+  const toggleInteractive = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setIsInteractive(!isInteractive);
+
+      // Update the node's draggable state
+      setNodes((nodes) =>
+        nodes.map((node) =>
+          node.id === id
+            ? {
+                ...node,
+                draggable: !isInteractive,
+                selected: !isInteractive,
+                data: { ...node.data, isInteractive: !isInteractive },
+              }
+            : node
+        )
+      );
+    },
+    [id, isInteractive, setNodes]
+  );
+
   return (
     <>
       <NodeResizer
-        isVisible={selected}
+        isVisible={selected && isInteractive}
         minWidth={200}
         minHeight={100}
         handleStyle={{
@@ -50,7 +83,16 @@ export function CloudNetworkNode({
             </span>
           )}
         </div>
-        <div className="pointer-events-none absolute inset-0" />
+        <button
+          onClick={toggleInteractive}
+          className="absolute top-4 right-4 p-1.5 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors z-50 pointer-events-auto"
+        >
+          {isInteractive ? (
+            <Unlock className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+          ) : (
+            <Lock className="h-4 w-4 text-slate-500 dark:text-slate-400" />
+          )}
+        </button>
       </div>
     </>
   );
