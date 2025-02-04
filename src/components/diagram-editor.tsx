@@ -278,7 +278,7 @@ interface DiagramEditorProps {
 function DiagramEditorContent({ projectId }: DiagramEditorProps) {
   const [nodes, setNodes] = React.useState<Node[]>([]);
   const [edges, setEdges] = React.useState<Edge[]>([]);
-  const [text, setText] = React.useState(defaultInfrastructure);
+  const [text, setText] = React.useState("");
   const [projectName, setProjectName] = React.useState<string>("");
   const [selectedNodeType, setSelectedNodeType] = React.useState<string>("");
   const [view, setView] = React.useState<"split" | "diagram" | "editor">(
@@ -292,24 +292,37 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
   // Load project data if projectId is provided
   React.useEffect(() => {
     async function loadProject() {
-      if (!projectId) return;
+      if (!projectId) {
+        // Check if we want to start with an empty diagram
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get("empty") === "true") {
+          setText("");
+          setNodes([]);
+          setEdges([]);
+        }
+
+        return;
+      }
 
       const result = await diagramRepository.findById(projectId);
       if (result._tag === "success" && result.value) {
-        setText(result.value.content);
         setProjectName(result.value.name);
-        try {
-          const { nodes: initialNodes, edges: initialEdges } =
-            parseInfrastructureText(result.value.content);
-          setNodes(initialNodes);
-          setEdges(initialEdges);
-        } catch (err) {
-          console.error("Failed to parse project content:", err);
-          toast({
-            title: "Error",
-            description: "Failed to load project content",
-            variant: "destructive",
-          });
+
+        if (result.value?.content) {
+          setText(result.value.content);
+          try {
+            const { nodes: initialNodes, edges: initialEdges } =
+              parseInfrastructureText(result.value.content);
+            setNodes(initialNodes);
+            setEdges(initialEdges);
+          } catch (err) {
+            console.error("Failed to parse project content:", err);
+            toast({
+              title: "Error",
+              description: "Failed to load project content",
+              variant: "destructive",
+            });
+          }
         }
       } else {
         toast({
@@ -326,9 +339,19 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
   // Load initial diagram for new projects
   React.useEffect(() => {
     if (!projectId) {
+      // Check if we want to start with an empty diagram
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("empty") === "true") {
+        setText("");
+        setNodes([]);
+        setEdges([]);
+        return;
+      }
+
       try {
         const { nodes: initialNodes, edges: initialEdges } =
           parseInfrastructureText(defaultInfrastructure);
+        setText(defaultInfrastructure);
         setNodes(initialNodes);
         setEdges(initialEdges);
       } catch (err) {
@@ -518,12 +541,27 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-10rem)]">
       <div className="flex justify-between items-center">
-        <SaveDiagramDialog
-          content={text}
-          projectId={projectId}
-          projectName={projectName}
-          onSaved={updateText}
-        />
+        <div className="flex gap-4 items-center">
+          <Button
+            variant="outline"
+            onClick={() => {
+              window.location.href = "/?empty=true";
+            }}
+          >
+            New
+          </Button>
+          <SaveDiagramDialog
+            content={text}
+            projectId={projectId}
+            projectName={projectName}
+            onSaved={updateText}
+          />
+          {projectName ? (
+            <div className="text-sm text-muted-foreground">
+              Working on &quot;{projectName}&quot;
+            </div>
+          ) : null}
+        </div>
         <div className="flex justify-end items-center gap-2">
           <Button
             variant={view === "split" ? "default" : "outline"}
