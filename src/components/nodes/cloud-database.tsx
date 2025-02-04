@@ -4,21 +4,10 @@ import { Database } from "lucide-react";
 import { CloudNodeShell, CloudNodeShellProps } from "./cloud-node-shell";
 import { nodeColors } from "@/lib/node-colors";
 
-interface CloudDatabaseNodeProps {
-  data: {
-    label: string;
-  } & CloudNodeShellProps["specs"];
-}
+type Props = Omit<CloudNodeShellProps, "icon" | "color">;
 
-export function CloudDatabaseNode({
-  data: { label, ...specs },
-}: CloudDatabaseNodeProps) {
+export function CloudDatabaseNode(props: Props) {
   return (
-    <CloudNodeShell
-      label={label}
-      icon={Database}
-      specs={specs}
-      color={nodeColors.database}
-    />
+    <CloudNodeShell {...props} icon={Database} color={nodeColors.database} />
   );
 }

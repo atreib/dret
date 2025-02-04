@@ -4,21 +4,10 @@ import { MessageSquare } from "lucide-react";
 import { CloudNodeShell, CloudNodeShellProps } from "./cloud-node-shell";
 import { nodeColors } from "@/lib/node-colors";
 
-interface CloudQueueNodeProps {
-  data: {
-    label: string;
-  } & CloudNodeShellProps["specs"];
-}
+type Props = Omit<CloudNodeShellProps, "icon" | "color">;
 
-export function CloudQueueNode({
-  data: { label, ...specs },
-}: CloudQueueNodeProps) {
+export function CloudQueueNode(props: Props) {
   return (
-    <CloudNodeShell
-      label={label}
-      icon={MessageSquare}
-      specs={specs}
-      color={nodeColors.queue}
-    />
+    <CloudNodeShell {...props} icon={MessageSquare} color={nodeColors.queue} />
   );
 }

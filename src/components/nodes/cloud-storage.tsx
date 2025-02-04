@@ -4,21 +4,10 @@ import { HardDrive } from "lucide-react";
 import { CloudNodeShell, CloudNodeShellProps } from "./cloud-node-shell";
 import { nodeColors } from "@/lib/node-colors";
 
-interface CloudStorageNodeProps {
-  data: {
-    label: string;
-  } & CloudNodeShellProps["specs"];
-}
+type Props = Omit<CloudNodeShellProps, "icon" | "color">;
 
-export function CloudStorageNode({
-  data: { label, ...specs },
-}: CloudStorageNodeProps) {
+export function CloudStorageNode(props: Props) {
   return (
-    <CloudNodeShell
-      label={label}
-      icon={HardDrive}
-      specs={specs}
-      color={nodeColors.storage}
-    />
+    <CloudNodeShell {...props} icon={HardDrive} color={nodeColors.storage} />
   );
 }

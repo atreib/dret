@@ -4,20 +4,13 @@ import { BarChart2 } from "lucide-react";
 import { CloudNodeShell, CloudNodeShellProps } from "./cloud-node-shell";
 import { nodeColors } from "@/lib/node-colors";
 
-interface CloudLoadBalancerNodeProps {
-  data: {
-    label: string;
-  } & CloudNodeShellProps["specs"];
-}
+type Props = Omit<CloudNodeShellProps, "icon" | "color">;
 
-export function CloudLoadBalancerNode({
-  data: { label, ...specs },
-}: CloudLoadBalancerNodeProps) {
+export function CloudLoadBalancerNode(props: Props) {
   return (
     <CloudNodeShell
-      label={label}
+      {...props}
       icon={BarChart2}
-      specs={specs}
       color={nodeColors.loadBalancer}
     />
   );

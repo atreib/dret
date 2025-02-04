@@ -1,19 +1,18 @@
 "use client";
 
-import { Handle, Position } from "reactflow";
+import { Handle, NodeProps, Position } from "reactflow";
 import { LucideIcon } from "lucide-react";
 
-export interface CloudNodeShellProps {
+export type CloudNodeShellProps = NodeProps<{
   label: string;
+}> & {
   icon: LucideIcon;
-  specs?: Record<string, string | number>;
   color?: string;
-}
+};
 
 export function CloudNodeShell({
-  label,
+  data: { label, ...specs },
   icon: Icon,
-  specs,
   color = "#64748b", // default slate-500 color
 }: CloudNodeShellProps) {
   return (
@@ -37,7 +36,7 @@ export function CloudNodeShell({
               <span className="font-medium">
                 {key.charAt(0).toUpperCase() + key.slice(1)}:
               </span>
-              <span>{value}</span>
+              <span>{String(value)}</span>
             </div>
           ))}
       </div>

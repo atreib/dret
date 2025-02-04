@@ -4,21 +4,10 @@ import { Router } from "lucide-react";
 import { CloudNodeShell, CloudNodeShellProps } from "./cloud-node-shell";
 import { nodeColors } from "@/lib/node-colors";
 
-interface CloudApiGatewayNodeProps {
-  data: {
-    label: string;
-  } & CloudNodeShellProps["specs"];
-}
+type Props = Omit<CloudNodeShellProps, "icon" | "color">;
 
-export function CloudApiGatewayNode({
-  data: { label, ...specs },
-}: CloudApiGatewayNodeProps) {
+export function CloudApiGatewayNode(props: Props) {
   return (
-    <CloudNodeShell
-      label={label}
-      icon={Router}
-      specs={specs}
-      color={nodeColors.apiGateway}
-    />
+    <CloudNodeShell {...props} icon={Router} color={nodeColors.apiGateway} />
   );
 }
