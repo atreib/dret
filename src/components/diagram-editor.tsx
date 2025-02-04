@@ -692,7 +692,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
 
 export function DiagramEditor({ projectId }: DiagramEditorProps) {
   return (
-    <main className="py-12">
+    <main className="pt-6 pb-12">
       <ReactFlowProvider>
         <DiagramEditorContent projectId={projectId} />
       </ReactFlowProvider>

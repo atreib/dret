@@ -1,8 +1,8 @@
-# Cloud Text2Diagram
+# Cloudret
 
 A modern web application that converts cloud infrastructure text descriptions into interactive diagrams and vice versa. Built with Next.js, React Flow, and TypeScript.
 
-![Cloud Text2Diagram Demo](docs/demo.gif)
+![Cloudret Demo](docs/demo.gif)
 
 ## Features
 

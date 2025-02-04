@@ -9,7 +9,7 @@ export function Footer() {
         </p>
         <Separator orientation="vertical" className="mx-4 h-4" />
         <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Cloud Text2Diagram
+          © {new Date().getFullYear()} Cloudret
         </p>
       </div>
     </footer>

@@ -17,7 +17,7 @@ describe("Navbar", () => {
     render(<Navbar />);
 
     // Check if the logo text is present
-    const logoElement = screen.getByText("Cloud Text2Diagram");
+    const logoElement = screen.getByText("Cloudret");
     expect(logoElement).toBeInTheDocument();
   });
 });
