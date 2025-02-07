@@ -17,7 +17,7 @@ interface InfrastructureElement {
   };
   connections?: Array<{
     to: string;
-    port?: number;
+    protocols: Record<string, number>;
   }>;
 }
 
@@ -168,7 +168,10 @@ export function parseInfrastructureText(text: string): {
         id: `e${nodeId++}`,
         source: id,
         target: connection.to,
-        label: connection.port ? `Port ${connection.port}` : undefined,
+        type: "networkConnection",
+        data: {
+          protocols: connection.protocols,
+        },
       });
     });
   });
@@ -300,8 +303,7 @@ export function generateInfrastructureText(
 
   // Add connections
   edges.forEach((edge) => {
-    const { source, target } = edge;
-    const edgeLabel = typeof edge.label === "string" ? edge.label : undefined;
+    const { source, target, data } = edge;
     const sourceElement = infrastructure.elements[source];
 
     // Skip if source doesn't exist or is a network (networks don't have connections)
@@ -310,12 +312,10 @@ export function generateInfrastructureText(
     // Initialize connections array if it doesn't exist
     if (!sourceElement.connections) sourceElement.connections = [];
 
-    // Add the connection with appropriate port
+    // Add the connection with protocols
     sourceElement.connections.push({
       to: target,
-      ...(edgeLabel && {
-        port: parseInt(edgeLabel.replace("Port ", "")),
-      }),
+      protocols: data.protocols,
     });
   });
 

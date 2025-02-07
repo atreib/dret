@@ -44,6 +44,7 @@ import { Copy, LayoutDashboard, PaintbrushIcon, TextIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SaveDiagramDialog } from "./save-diagram-dialog";
 import { diagramRepository } from "@/lib/db/models/diagram";
+import { NetworkConnectionEdge } from "./edges/network-connection";
 
 const nodeTypes = {
   cloudMachine: CloudMachineNode,
@@ -55,6 +56,10 @@ const nodeTypes = {
   cloudCdn: CloudCdnNode,
   cloudApiGateway: CloudApiGatewayNode,
   cloudFirewall: CloudFirewallNode,
+};
+
+const edgeTypes = {
+  networkConnection: NetworkConnectionEdge,
 };
 
 const defaultInfrastructure = `elements:
@@ -73,6 +78,9 @@ const defaultInfrastructure = `elements:
         y: -35
     connections:
       - to: web-app
+        protocols:
+          http: 80
+          https: 443
   web-app:
     type: loadbalancer
     specs:
@@ -85,9 +93,11 @@ const defaultInfrastructure = `elements:
         y: 250
     connections:
       - to: app-server-1
-        port: 8080
+        protocols:
+          http: 8080
       - to: app-server-2
-        port: 8080
+        protocols:
+          http: 8080
   app-server-1:
     type: compute
     specs:
@@ -99,9 +109,11 @@ const defaultInfrastructure = `elements:
         y: 416
     connections:
       - to: api-gateway
-        port: 443
+        protocols:
+          https: 443
       - to: cache
-        port: 6379
+        protocols:
+          tcp: 6379
   app-server-2:
     type: compute
     specs:
@@ -113,9 +125,11 @@ const defaultInfrastructure = `elements:
         y: 412
     connections:
       - to: api-gateway
-        port: 443
+        protocols:
+          https: 443
       - to: cache
-        port: 6379
+        protocols:
+          tcp: 6379
   cache:
     type: database
     specs:
@@ -142,10 +156,14 @@ const defaultInfrastructure = `elements:
         y: 846
     connections:
       - to: auth-service
-        port: 8081
+        protocols:
+          http: 8081
       - to: main-db
-        port: 5432
+        protocols:
+          postgresql: 5432
       - to: event-collector
+        protocols:
+          http: 8082
   auth-service:
     type: compute
     specs:
@@ -157,7 +175,8 @@ const defaultInfrastructure = `elements:
         y: 1018
     connections:
       - to: users-db
-        port: 5432
+        protocols:
+          postgresql: 5432
   main-db:
     type: database
     specs:
@@ -190,7 +209,8 @@ const defaultInfrastructure = `elements:
         y: 1046
     connections:
       - to: analytics-processor
-        port: 9092
+        protocols:
+          kafka: 9092
   analytics-processor:
     type: compute
     specs:
@@ -202,9 +222,11 @@ const defaultInfrastructure = `elements:
         y: 1252
     connections:
       - to: analytics-store
-        port: 5432
+        protocols:
+          postgresql: 5432
       - to: data-lake
-        port: 443
+        protocols:
+          http: 443
   analytics-store:
     type: database
     specs:
@@ -396,7 +418,20 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
 
   const onConnect = React.useCallback(
     (connection: Connection) => {
-      setEdges((eds) => addEdge(connection, eds));
+      setEdges((eds) =>
+        addEdge(
+          {
+            ...connection,
+            type: "networkConnection",
+            data: {
+              protocols: {
+                tcp: 0, // Default protocol and port
+              },
+            },
+          },
+          eds
+        )
+      );
     },
     [setEdges]
   );
@@ -668,6 +703,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 nodeTypes={nodeTypes}
+                edgeTypes={edgeTypes}
                 onNodesDelete={updateText}
                 onEdgesDelete={updateText}
                 fitView
