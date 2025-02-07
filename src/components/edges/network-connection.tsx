@@ -1,9 +1,10 @@
 "use client";
 
-import { EdgeProps, getBezierPath } from "reactflow";
+import { EdgeProps, getBezierPath, useReactFlow } from "reactflow";
 import { EdgeProtocolsDialog } from "./edge-protocols-dialog";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type NetworkConnectionData = {
   protocols: Record<string, number>;
@@ -22,6 +23,7 @@ export function NetworkConnectionEdge({
   markerEnd,
   selected,
 }: EdgeProps<NetworkConnectionData>) {
+  const { setEdges } = useReactFlow();
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -35,6 +37,15 @@ export function NetworkConnectionEdge({
   const protocolList = Object.entries(protocols)
     .map(([protocol, port]) => `${protocol}: ${port}`)
     .join("\n");
+
+  const handleSelect = () => {
+    setEdges((edges) =>
+      edges.map((edge) => ({
+        ...edge,
+        selected: edge.id === id,
+      }))
+    );
+  };
 
   return (
     <>
@@ -54,20 +65,24 @@ export function NetworkConnectionEdge({
           className="overflow-visible pointer-events-none"
         >
           <div className="flex items-center justify-center w-full h-full">
-            <div className="bg-background text-foreground border border-border rounded px-2 py-1 text-xs whitespace-pre text-center">
+            <div
+              className="bg-background text-foreground border border-border rounded px-2 py-1 text-xs whitespace-pre text-center cursor-pointer pointer-events-auto"
+              onClick={handleSelect}
+            >
               {protocolList}
             </div>
-            {selected ? (
-              <EdgeProtocolsDialog edgeId={id}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="ml-1 h-6 w-6 rounded-full pointer-events-auto"
-                >
-                  <Settings className="h-3 w-3" />
-                </Button>
-              </EdgeProtocolsDialog>
-            ) : null}
+            <EdgeProtocolsDialog edgeId={id}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  "ml-1 h-6 w-6 rounded-full z-10 pointer-events-auto",
+                  !selected && "invisible"
+                )}
+              >
+                <Settings className="h-3 w-3" />
+              </Button>
+            </EdgeProtocolsDialog>
           </div>
         </foreignObject>
       )}
