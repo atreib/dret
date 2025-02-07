@@ -115,15 +115,19 @@ const sections = [
         <div className="space-y-2">
           <h4 className="font-medium">Connections</h4>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Connect elements to each other using the connections array.
-            Optionally specify a port to label the connection:
+            Connect elements to each other using the connections array. Each
+            connection can specify multiple protocols with their respective
+            ports:
           </p>
           <pre className="text-xs p-2 bg-slate-50 dark:bg-slate-900 rounded-lg overflow-auto">
             {`connections:
-  - to: database    # basic connection
-    port: 5432      # optional port number
-  - to: cache       # multiple connections
-    port: 6379      # are supported`}
+  - to: database    # target element
+    protocols:      # protocol definitions
+      postgresql: 5432  # protocol: port
+      http: 8080       # multiple protocols
+  - to: cache      
+    protocols:
+      tcp: 6379    # basic tcp connection`}
           </pre>
         </div>
       </div>
@@ -175,9 +179,15 @@ const sections = [
     specs:
       cpu: 2
       memory: "4GB"
+    metadata:
+      position:
+        x: 100
+        y: 200
     connections:
       - to: database
-        port: 5432
+        protocols:
+          postgresql: 5432
+          http: 8080
 
   database:
     type: database
@@ -185,11 +195,22 @@ const sections = [
       engine: postgresql
       version: "14"
       storage: "100GB"
+    metadata:
+      position:
+        x: 300
+        y: 200
 
 networks:
   main-vpc:
     specs:
       cidr: "10.0.0.0/16"
+    metadata:
+      position:
+        x: 50
+        y: 100
+      size:
+        width: 400
+        height: 300
     contains:
       - web-server
       - database`}

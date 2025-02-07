@@ -55,25 +55,43 @@ elements:
     specs:
       cpu: 2
       memory: "4GB"
+    metadata:
+      position:
+        x: 100
+        y: 200
     connections:
       - to: database
-        port: 5432
+        protocols:
+          postgresql: 5432
+          http: 8080
 
 networks:
   main-vpc:
     specs:
       cidr: "10.0.0.0/16"
+    metadata:
+      position:
+        x: 50
+        y: 100
+      size:
+        width: 400
+        height: 300
     contains:
       - web-server
+      - database
 ```
 
 ### Available Element Types
 
-- **Compute** (`type: compute`): Virtual machines or servers
-- **Database** (`type: database`): Database instances
-- **Load Balancer** (`type: loadbalancer`): Traffic distribution
-- **Storage** (`type: storage`): Object storage services
-- **Network** (network container): Groups related elements
+- **Compute** (`type: compute`): Virtual machines or servers with configurable CPU and memory
+- **Database** (`type: database`): Database instances with configurable engine and storage
+- **Load Balancer** (`type: loadbalancer`): Traffic distribution with protocol and algorithm settings
+- **Storage** (`type: storage`): Object storage services with configurable capacity
+- **Queue** (`type: queue`): Message queues and brokers (RabbitMQ, Kafka)
+- **CDN** (`type: cdn`): Content Delivery Networks for edge caching
+- **API Gateway** (`type: apigateway`): API management with auth and rate limiting
+- **Firewall** (`type: firewall`): Network security with inbound/outbound rules
+- **Network**: Container for grouping related elements with CIDR range
 
 ## Developer Guide
 
@@ -124,6 +142,7 @@ src/
 ├── app/                 # Next.js app router
 ├── components/
 │   ├── nodes/          # Cloud infrastructure node components
+│   ├── edges/          # Edge components for connections
 │   ├── ui/             # Reusable UI components
 │   └── ...
 ├── hooks/              # Custom React hooks
