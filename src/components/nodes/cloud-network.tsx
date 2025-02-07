@@ -5,6 +5,7 @@ import { NodeResizer } from "@reactflow/node-resizer";
 import "@reactflow/node-resizer/dist/style.css";
 import { useState, useCallback } from "react";
 import { useReactFlow } from "reactflow";
+import { NetworkSpecsDialog } from "./network-specs-dialog";
 
 interface CloudNetworkNodeProps {
   id: string;
@@ -82,6 +83,7 @@ export function CloudNetworkNode({
               ({data.cidr})
             </span>
           )}
+          <NetworkSpecsDialog nodeId={id} />
         </div>
         <button
           onClick={toggleInteractive}
