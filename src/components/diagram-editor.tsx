@@ -578,7 +578,16 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
           <GenerateInfrastructureDialog
             onInfrastructureGenerated={(yaml) => {
               setText(yaml);
-              debouncedMonacoUpdate(yaml);
+              const { nodes: initialNodes, edges: initialEdges } =
+                parseInfrastructureText(yaml);
+              setNodes(
+                initialNodes.map((node) => ({
+                  ...node,
+                  draggable: node.type !== "cloudNetwork",
+                  selectable: node.type !== "cloudNetwork",
+                }))
+              );
+              setEdges(initialEdges);
             }}
           />
           <SaveDiagramDialog
