@@ -219,7 +219,10 @@ export function SettingsSheet({ children }: React.PropsWithChildren) {
                       </Button>
                     </div>
                     <FormDescription>
-                      Your API key for the selected LLM model
+                      Depending on the LLM model you choose, you may need to
+                      enter an API key. Eg: When using GPT-4o, you need to enter
+                      an API key for OpenAI. You can generate your own on their
+                      dashboard.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -254,7 +257,9 @@ export function SettingsSheet({ children }: React.PropsWithChildren) {
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Your preferred cloud provider for infrastructure diagrams
+                      Your preferred cloud provider for infrastructure diagrams.
+                      This is important to correctly generate the Terraform for
+                      your infrastructure.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
