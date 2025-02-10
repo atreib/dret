@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Settings, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -51,7 +51,7 @@ const formSchema = z.object({
   ]),
 });
 
-export function SettingsSheet() {
+export function SettingsSheet({ children }: React.PropsWithChildren) {
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isInitialLoading, setIsInitialLoading] = React.useState(true);
@@ -137,12 +137,7 @@ export function SettingsSheet() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Settings className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Open settings</span>
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Settings</SheetTitle>

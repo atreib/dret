@@ -7,8 +7,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "./ui/button";
-import { FileText } from "lucide-react";
 
 const sections = [
   {
@@ -219,15 +217,14 @@ networks:
   },
 ];
 
-export function DocumentationSidebar() {
+export function DocumentationSidebar({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <FileText className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Open documentation</span>
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Documentation</SheetTitle>

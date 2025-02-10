@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Folder, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -203,7 +203,11 @@ function DeleteProjectDialog({
   );
 }
 
-export function ProjectsSheet() {
+interface ProjectsSheetProps {
+  children: React.ReactNode;
+}
+
+export function ProjectsSheet({ children }: ProjectsSheetProps) {
   const [projects, setProjects] = React.useState<
     Array<{
       id: string;
@@ -248,11 +252,8 @@ export function ProjectsSheet() {
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" onClick={loadProjects}>
-          <Folder className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Open projects</span>
-        </Button>
+      <SheetTrigger asChild onClick={loadProjects}>
+        {children}
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
