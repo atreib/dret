@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { LLMService } from "@/lib/services/llm-service";
 import { LLMServiceError, LLMErrorCode } from "@/lib/errors/llm-errors";
+import { DatabaseError } from "@/lib/db/contract";
 
 const EXAMPLE_PROMPTS = [
   {
@@ -66,26 +67,35 @@ export function GenerateInfrastructureDialog({
         description: "Infrastructure generated successfully!",
       });
     } catch (error) {
-      if (error instanceof LLMServiceError) {
-        if (error.code === LLMErrorCode.INVALID_API_KEY) {
-          toast({
-            title: "API Key Required",
-            description: error.message,
-            variant: "destructive",
-          });
+      console.error(error);
+      if (error instanceof DatabaseError) {
+        toast({
+          title: "Missing configuration",
+          description:
+            "Before you proceed, go to Settings and finish the configuration",
+        });
+      } else {
+        if (error instanceof LLMServiceError) {
+          if (error.code === LLMErrorCode.INVALID_API_KEY) {
+            toast({
+              title: "API Key Required",
+              description:
+                "Before you proceed, go to Settings and add your API Key",
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
         } else {
           toast({
             title: "Error",
-            description: error.message,
+            description: "An unexpected error occurred. Please try again.",
             variant: "destructive",
           });
         }
-      } else {
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
       }
     } finally {
       setIsLoading(false);
