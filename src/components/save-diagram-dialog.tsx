@@ -35,7 +35,7 @@ interface SaveDiagramDialogProps {
   content: string;
   projectId?: string;
   projectName?: string;
-  onSaved?: () => void;
+  onSaved: (content: string) => void;
 }
 
 export function SaveDiagramDialog({
@@ -74,7 +74,7 @@ export function SaveDiagramDialog({
         title: "Success",
         description: "Project updated successfully",
       });
-      onSaved?.();
+      onSaved(content);
     } catch (error) {
       toast({
         title: "Error",
@@ -104,7 +104,7 @@ export function SaveDiagramDialog({
       // Redirect to the project page
       router.push(`/${newId}`);
       setOpen(false);
-      onSaved?.();
+      onSaved(content);
     } catch (error) {
       toast({
         title: "Error",

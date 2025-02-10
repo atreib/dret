@@ -20,10 +20,7 @@ import { Button } from "@/components/ui/button";
 import Editor, { type OnMount } from "@monaco-editor/react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
-import {
-  parseInfrastructureText,
-  generateInfrastructureText,
-} from "@/lib/infrastructure-parser";
+import { parseInfrastructureText } from "@/lib/infrastructure-parser";
 import { CloudMachineNode } from "./nodes/cloud-machine";
 import { CloudDatabaseNode } from "./nodes/cloud-database";
 import { CloudNetworkNode } from "./nodes/cloud-network";
@@ -46,6 +43,8 @@ import { cn } from "@/lib/utils";
 import { SaveDiagramDialog } from "./save-diagram-dialog";
 import { diagramRepository } from "@/lib/db/models/diagram";
 import { NetworkConnectionEdge } from "./edges/network-connection";
+import { useSyncState } from "@/hooks/useSyncState";
+import { SyncLoadingIndicator } from "@/components/sync-loading-indicator";
 
 const nodeTypes = {
   cloudMachine: CloudMachineNode,
@@ -299,9 +298,18 @@ interface DiagramEditorProps {
 }
 
 function DiagramEditorContent({ projectId }: DiagramEditorProps) {
-  const [nodes, setNodes] = React.useState<Node[]>([]);
-  const [edges, setEdges] = React.useState<Edge[]>([]);
-  const [text, setText] = React.useState("");
+  const {
+    activeEditor,
+    isPending,
+    debouncedMonacoUpdate,
+    debouncedFlowUpdate,
+    setNodes,
+    setEdges,
+    setText,
+    nodes,
+    edges,
+    text,
+  } = useSyncState();
   const [projectName, setProjectName] = React.useState<string>("");
   const [selectedNodeType, setSelectedNodeType] = React.useState<string>("");
   const [view, setView] = React.useState<"split" | "diagram" | "editor">(
@@ -323,7 +331,6 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
           setNodes([]);
           setEdges([]);
         }
-
         return;
       }
 
@@ -363,7 +370,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
     }
 
     loadProject();
-  }, [projectId, toast]);
+  }, [projectId, toast, setText, setNodes, setEdges]);
 
   // Load initial diagram for new projects
   React.useEffect(() => {
@@ -393,113 +400,66 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         console.error("Failed to load initial diagram:", err);
       }
     }
-  }, [projectId]);
+  }, [projectId, setText, setNodes, setEdges]);
 
   const onNodesChange = React.useCallback(
     (changes: NodeChange[]) => {
-      setNodes((nds) => {
+      setNodes((nds: Node[]) => {
         const updatedNodes = applyNodeChanges(changes, nds);
-        return updatedNodes.map((node) => {
+        const result = updatedNodes.map((node) => {
           if (node.type === "cloudNetwork") {
             return { ...node, zIndex: -1 };
           }
           return node;
         });
+        debouncedFlowUpdate(result, edges);
+        return result;
       });
     },
-    [setNodes]
+    [edges, debouncedFlowUpdate, setNodes]
   );
 
   const onEdgesChange = React.useCallback(
     (changes: EdgeChange[]) => {
-      setEdges((eds) => applyEdgeChanges(changes, eds));
+      setEdges((eds: Edge[]) => {
+        const result = applyEdgeChanges(changes, eds);
+        debouncedFlowUpdate(nodes, result);
+        return result;
+      });
     },
-    [setEdges]
+    [nodes, debouncedFlowUpdate, setEdges]
   );
 
   const onConnect = React.useCallback(
     (connection: Connection) => {
-      setEdges((eds) =>
-        addEdge(
+      setEdges((eds: Edge[]) => {
+        const result = addEdge(
           {
             ...connection,
             type: "networkConnection",
             data: {
               protocols: {
-                tcp: 0, // Default protocol and port
+                tcp: 0,
               },
             },
           },
           eds
-        )
-      );
+        );
+        debouncedFlowUpdate(nodes, result);
+        return result;
+      });
     },
-    [setEdges]
+    [nodes, debouncedFlowUpdate, setEdges]
   );
 
-  const updateDiagram = React.useCallback(() => {
-    if (!text.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter some infrastructure text.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { nodes: newNodes, edges: newEdges } =
-        parseInfrastructureText(text);
-      setNodes(
-        newNodes.map((node) => ({
-          ...node,
-          draggable: node.type !== "cloudNetwork",
-          selectable: node.type !== "cloudNetwork",
-        }))
-      );
-      setEdges(newEdges);
-      toast({
-        title: "Success",
-        description: "Diagram updated successfully.",
-      });
-    } catch (err) {
-      const error = err as Error;
-      toast({
-        title: "Error",
-        description:
-          error.message ||
-          "Failed to parse infrastructure text. Please check the syntax.",
-        variant: "destructive",
-      });
-    }
-  }, [text, toast]);
-
-  const updateText = React.useCallback(() => {
-    if (nodes.length === 0 && edges.length === 0) {
-      setText("");
-      return;
-    }
-
-    try {
-      const newText = generateInfrastructureText(nodes, edges);
+  const handleTextChange = React.useCallback(
+    (value: string | undefined) => {
+      const newText = value || "";
       setText(newText);
-      toast({
-        title: "Success",
-        description: "Text updated successfully.",
-      });
-    } catch (err) {
-      const error = err as Error;
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate infrastructure text.",
-        variant: "destructive",
-      });
-    }
-  }, [nodes, edges, toast]);
-
-  const handleTextChange = React.useCallback((value: string | undefined) => {
-    setText(value || "");
-  }, []);
+      debouncedMonacoUpdate(newText);
+    },
+    [setText, debouncedMonacoUpdate]
+  );
 
   const addNode = React.useCallback(
     (type: string) => {
@@ -561,11 +521,14 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         },
       };
 
-      setNodes((nds) => [...nds, newNode]);
-      updateText();
-      setSelectedNodeType(""); // Reset the select after adding a node
+      setNodes((nds: Node[]) => {
+        const result = [...nds, newNode];
+        debouncedFlowUpdate(result, edges);
+        return result;
+      });
+      setSelectedNodeType("");
     },
-    [nodes, reactFlowInstance, updateText]
+    [nodes, edges, reactFlowInstance, setNodes, debouncedFlowUpdate]
   );
 
   const handleEditorDidMount: OnMount = React.useCallback((editor) => {
@@ -615,36 +578,17 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
           <GenerateInfrastructureDialog
             onInfrastructureGenerated={(yaml) => {
               setText(yaml);
-              try {
-                const { nodes: newNodes, edges: newEdges } =
-                  parseInfrastructureText(yaml);
-                setNodes(
-                  newNodes.map((node) => ({
-                    ...node,
-                    draggable: node.type !== "cloudNetwork",
-                    selectable: node.type !== "cloudNetwork",
-                  }))
-                );
-                setEdges(newEdges);
-                toast({
-                  title: "Success",
-                  description: "Infrastructure generated successfully!",
-                });
-              } catch (err) {
-                console.error("Failed to parse generated infrastructure:", err);
-                toast({
-                  title: "Error",
-                  description: "Failed to parse generated infrastructure",
-                  variant: "destructive",
-                });
-              }
+              debouncedMonacoUpdate(yaml);
             }}
           />
           <SaveDiagramDialog
             content={text}
             projectId={projectId}
             projectName={projectName}
-            onSaved={updateText}
+            onSaved={(savedText: string) => {
+              setText(savedText);
+              debouncedMonacoUpdate(savedText);
+            }}
           />
         </div>
         <div className="flex w-full justify-start lg:justify-end items-center gap-2">
@@ -685,6 +629,9 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         {(view === "split" || view === "editor") && (
           <div className="rounded-lg flex flex-col min-h-[500px]">
             <div className="border flex-1 relative">
+              {isPending && activeEditor === "flow" && (
+                <SyncLoadingIndicator message="Updating from diagram..." />
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -712,20 +659,14 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
                 }}
               />
             </div>
-            <div className="pt-2">
-              <Button
-                variant="default"
-                onClick={updateDiagram}
-                className="w-full"
-              >
-                Update Diagram
-              </Button>
-            </div>
           </div>
         )}
         {(view === "split" || view === "diagram") && (
           <div className="rounded-lg flex flex-col">
-            <div className="flex-1 border min-h-[500px]">
+            <div className="flex-1 border min-h-[500px] relative">
+              {isPending && activeEditor === "monaco" && (
+                <SyncLoadingIndicator message="Updating from editor..." />
+              )}
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -734,8 +675,6 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
                 onConnect={onConnect}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
-                onNodesDelete={updateText}
-                onEdgesDelete={updateText}
                 fitView
               >
                 <div className="absolute top-2 right-2 z-10">
@@ -763,11 +702,6 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
                 <Background />
                 <Controls />
               </ReactFlow>
-            </div>
-            <div className="pt-2">
-              <Button variant="default" onClick={updateText} className="w-full">
-                Update Text
-              </Button>
             </div>
           </div>
         )}
