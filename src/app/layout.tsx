@@ -87,7 +87,7 @@ export default function RootLayout({
                 </span>
               </p>
             </header>
-            <main className="flex-1 px-12">{children}</main>
+            <main className="px-12">{children}</main>
             <Footer />
           </div>
           <Toaster />

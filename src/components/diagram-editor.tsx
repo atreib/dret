@@ -595,7 +595,12 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
   }, [toast]);
 
   return (
-    <div className="flex flex-col gap-4 h-[calc(100vh-10rem)]">
+    <div className="flex flex-col gap-4">
+      {projectName ? (
+        <div className="text-sm text-muted-foreground">
+          Working on &quot;{projectName}&quot;
+        </div>
+      ) : null}
       <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
         <div className="flex w-full justify-start items-center gap-2">
           <Button
@@ -671,11 +676,6 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
             projectName={projectName}
             onSaved={updateText}
           />
-          {projectName ? (
-            <div className="text-sm text-muted-foreground">
-              Working on &quot;{projectName}&quot;
-            </div>
-          ) : null}
         </div>
         <div className="flex w-full justify-start lg:justify-end items-center gap-2">
           <Button
@@ -713,7 +713,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         )}
       >
         {(view === "split" || view === "editor") && (
-          <div className="rounded-lg flex flex-col">
+          <div className="rounded-lg flex flex-col min-h-[500px]">
             <div className="border flex-1 relative">
               <Button
                 variant="ghost"
@@ -755,7 +755,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         )}
         {(view === "split" || view === "diagram") && (
           <div className="rounded-lg flex flex-col">
-            <div className="flex-1 border">
+            <div className="flex-1 border min-h-[500px]">
               <ReactFlow
                 nodes={nodes}
                 edges={edges}
