@@ -36,7 +36,7 @@ const UserSettingsSchema = z.object({
 export type UserSettings = z.infer<typeof UserSettingsSchema>;
 
 const DEFAULT_SETTINGS: UserSettings = {
-  id: "current",
+  id: "user-settings",
   llmModel: LLMModelEnum.GPT_4,
   apiKey: "",
   cloudProvider: CloudProviderEnum.AWS,

@@ -33,6 +33,7 @@ import { CloudQueueNode } from "./nodes/cloud-queue";
 import { CloudCdnNode } from "./nodes/cloud-cdn";
 import { CloudApiGatewayNode } from "./nodes/cloud-api-gateway";
 import { CloudFirewallNode } from "./nodes/cloud-firewall";
+import { GenerateInfrastructureDialog } from "./generate-infrastructure-dialog";
 import {
   Select,
   SelectContent,
@@ -595,8 +596,8 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
 
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-10rem)]">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-4 items-center">
+      <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
+        <div className="flex w-full justify-start items-center gap-2">
           <Button
             variant="outline"
             onClick={() => {
@@ -636,6 +637,34 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
           >
             Load Example
           </Button>
+          <GenerateInfrastructureDialog
+            onInfrastructureGenerated={(yaml) => {
+              setText(yaml);
+              try {
+                const { nodes: newNodes, edges: newEdges } =
+                  parseInfrastructureText(yaml);
+                setNodes(
+                  newNodes.map((node) => ({
+                    ...node,
+                    draggable: node.type !== "cloudNetwork",
+                    selectable: node.type !== "cloudNetwork",
+                  }))
+                );
+                setEdges(newEdges);
+                toast({
+                  title: "Success",
+                  description: "Infrastructure generated successfully!",
+                });
+              } catch (err) {
+                console.error("Failed to parse generated infrastructure:", err);
+                toast({
+                  title: "Error",
+                  description: "Failed to parse generated infrastructure",
+                  variant: "destructive",
+                });
+              }
+            }}
+          />
           <SaveDiagramDialog
             content={text}
             projectId={projectId}
@@ -648,7 +677,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
             </div>
           ) : null}
         </div>
-        <div className="flex justify-end items-center gap-2">
+        <div className="flex w-full justify-start lg:justify-end items-center gap-2">
           <Button
             variant={view === "split" ? "default" : "outline"}
             size="icon"
@@ -678,7 +707,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
       <div
         className={cn(
           "grid gap-4 flex-1",
-          view === "split" && "grid-cols-1 md:grid-cols-2",
+          view === "split" && "grid-cols-1 lg:grid-cols-2",
           view === "diagram" && "grid-cols-1",
           view === "editor" && "grid-cols-1"
         )}
