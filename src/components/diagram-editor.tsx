@@ -602,12 +602,13 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
         </div>
       ) : null}
       <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
-        <div className="flex w-full justify-start items-center gap-2">
+        <div className="flex flex-col lg:flex-row w-full items-start lg:items-center gap-2">
           <Button
             variant="outline"
             onClick={() => {
               window.location.href = "/?empty=true";
             }}
+            className="w-full lg:w-auto"
           >
             New
           </Button>

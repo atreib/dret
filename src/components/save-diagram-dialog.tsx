@@ -127,7 +127,7 @@ export function SaveDiagramDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="w-full lg:w-auto">
           <SaveIcon className="h-4 w-4 mr-2" />
           Save
         </Button>
