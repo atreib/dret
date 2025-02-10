@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Settings } from "lucide-react";
+import { BotIcon, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -47,11 +47,7 @@ export function GenerateInfrastructureDialog({
   const { toast } = useToast();
 
   const handleGenerate = async () => {
-    console.log("🎯 Starting infrastructure generation...");
-    console.log("📝 Prompt:", prompt);
-
     if (!prompt.trim()) {
-      console.log("❌ Empty prompt detected");
       toast({
         title: "Error",
         description: "Please enter a description of your infrastructure.",
@@ -62,11 +58,7 @@ export function GenerateInfrastructureDialog({
 
     setIsLoading(true);
     try {
-      console.log("🚀 Calling LLM service...");
       const yaml = await LLMService.generateInfrastructure(prompt);
-      console.log("✅ LLM service returned successfully");
-      console.log("📄 Generated YAML:", yaml);
-
       onInfrastructureGenerated(yaml);
       setOpen(false);
       toast({
@@ -74,32 +66,11 @@ export function GenerateInfrastructureDialog({
         description: "Infrastructure generated successfully!",
       });
     } catch (error) {
-      console.log("💥 Error occurred:", error);
       if (error instanceof LLMServiceError) {
-        console.log("🔍 LLM Service Error:", {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-        });
-
         if (error.code === LLMErrorCode.INVALID_API_KEY) {
           toast({
             title: "API Key Required",
-            description: (
-              <div className="flex flex-col gap-2">
-                <p>{error.message}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setOpen(false); // Close the generation dialog
-                  }}
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Open Settings
-                </Button>
-              </div>
-            ),
+            description: error.message,
             variant: "destructive",
           });
         } else {
@@ -110,7 +81,6 @@ export function GenerateInfrastructureDialog({
           });
         }
       } else {
-        console.log("🔍 Unknown Error:", error);
         toast({
           title: "Error",
           description: "An unexpected error occurred. Please try again.",
@@ -118,7 +88,6 @@ export function GenerateInfrastructureDialog({
         });
       }
     } finally {
-      console.log("🏁 Generation attempt completed");
       setIsLoading(false);
     }
   };
@@ -126,15 +95,19 @@ export function GenerateInfrastructureDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Generate from Description</Button>
+        <Button variant="default">
+          <BotIcon className="mr-2 h-4 w-4" />
+          Generate new with AI
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Generate Infrastructure</DialogTitle>
           <DialogDescription>
             Describe your infrastructure needs in natural language and
-            we&apos;ll generate a diagram for you. Try to include details about
-            components, their connections, and any specific requirements.
+            we&apos;ll generate a <span className="font-bold">new</span> diagram
+            for you. Try to include details about components, their connections,
+            and any specific requirements.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

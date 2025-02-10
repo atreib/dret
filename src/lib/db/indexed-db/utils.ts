@@ -59,7 +59,6 @@ class DatabaseService {
         // Create or update object stores
         this.objectStores.forEach((store) => {
           if (!db.objectStoreNames.contains(store.name)) {
-            console.log(`Creating object store: ${store.name}`);
             const objectStore = db.createObjectStore(store.name, {
               keyPath: store.keyPath,
             });

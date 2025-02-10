@@ -42,12 +42,7 @@ import {
 const SETTINGS_ID = "user-settings";
 
 const formSchema = z.object({
-  llmModel: z.enum([
-    LLMModelEnum.GPT_4,
-    LLMModelEnum.GPT_3_5_TURBO,
-    LLMModelEnum.CLAUDE_3_OPUS,
-    LLMModelEnum.CLAUDE_3_SONNET,
-  ]),
+  llmModel: z.enum([LLMModelEnum.GPT_4o]),
   apiKey: z.string().min(1, "API Key is required"),
   cloudProvider: z.enum([
     CloudProviderEnum.AWS,
@@ -65,7 +60,7 @@ export function SettingsSheet() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      llmModel: LLMModelEnum.GPT_4,
+      llmModel: LLMModelEnum.GPT_4o,
       apiKey: "",
       cloudProvider: CloudProviderEnum.AWS,
     },
@@ -182,17 +177,8 @@ export function SettingsSheet() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value={LLMModelEnum.GPT_4}>
-                          GPT-4
-                        </SelectItem>
-                        <SelectItem value={LLMModelEnum.GPT_3_5_TURBO}>
-                          GPT-3.5 Turbo
-                        </SelectItem>
-                        <SelectItem value={LLMModelEnum.CLAUDE_3_OPUS}>
-                          Claude 3 Opus
-                        </SelectItem>
-                        <SelectItem value={LLMModelEnum.CLAUDE_3_SONNET}>
-                          Claude 3 Sonnet
+                        <SelectItem value={LLMModelEnum.GPT_4o}>
+                          GPT-4o
                         </SelectItem>
                       </SelectContent>
                     </Select>

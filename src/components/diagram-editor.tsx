@@ -611,37 +611,6 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
           >
             New
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setText(defaultInfrastructure);
-              try {
-                const { nodes: initialNodes, edges: initialEdges } =
-                  parseInfrastructureText(defaultInfrastructure);
-                setNodes(
-                  initialNodes.map((node) => ({
-                    ...node,
-                    draggable: node.type !== "cloudNetwork",
-                    selectable: node.type !== "cloudNetwork",
-                  }))
-                );
-                setEdges(initialEdges);
-                toast({
-                  title: "Success",
-                  description: "Example infrastructure loaded successfully.",
-                });
-              } catch (err) {
-                console.error("Failed to load example infrastructure:", err);
-                toast({
-                  title: "Error",
-                  description: "Failed to load example infrastructure",
-                  variant: "destructive",
-                });
-              }
-            }}
-          >
-            Load Example
-          </Button>
           <GenerateInfrastructureDialog
             onInfrastructureGenerated={(yaml) => {
               setText(yaml);

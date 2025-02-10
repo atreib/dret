@@ -4,10 +4,7 @@ import { z } from "zod";
 import { BaseRepository } from "../indexed-db";
 
 export const LLMModelEnum = {
-  GPT_4: "gpt-4",
-  GPT_3_5_TURBO: "gpt-3.5-turbo",
-  CLAUDE_3_OPUS: "claude-3-opus",
-  CLAUDE_3_SONNET: "claude-3-sonnet",
+  GPT_4o: "gpt-4o",
 } as const;
 
 export const CloudProviderEnum = {
@@ -18,12 +15,7 @@ export const CloudProviderEnum = {
 
 const UserSettingsSchema = z.object({
   id: z.string(),
-  llmModel: z.enum([
-    LLMModelEnum.GPT_4,
-    LLMModelEnum.GPT_3_5_TURBO,
-    LLMModelEnum.CLAUDE_3_OPUS,
-    LLMModelEnum.CLAUDE_3_SONNET,
-  ]),
+  llmModel: z.enum([LLMModelEnum.GPT_4o]),
   apiKey: z.string().min(1, "API Key is required"),
   cloudProvider: z.enum([
     CloudProviderEnum.AWS,
@@ -37,7 +29,7 @@ export type UserSettings = z.infer<typeof UserSettingsSchema>;
 
 const DEFAULT_SETTINGS: UserSettings = {
   id: "user-settings",
-  llmModel: LLMModelEnum.GPT_4,
+  llmModel: LLMModelEnum.GPT_4o,
   apiKey: "",
   cloudProvider: CloudProviderEnum.AWS,
   updatedAt: new Date(),
