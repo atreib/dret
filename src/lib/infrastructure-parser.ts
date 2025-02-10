@@ -156,7 +156,7 @@ export function parseInfrastructureText(text: string): {
       type: nodeType,
       position: { x: pos.x, y: pos.y },
       data: {
-        label: id,
+        label: element.specs?.label || id,
         ...element.specs,
       },
       zIndex: 2,
@@ -195,7 +195,7 @@ export function parseInfrastructureText(text: string): {
         zIndex: -1,
       },
       data: {
-        label: id,
+        label: network.specs?.label || id,
         ...network.specs,
       },
       zIndex: -1,
@@ -215,6 +215,12 @@ export function generateInfrastructureText(
     elements: {},
     networks: {},
   };
+
+  // Create a mapping of old IDs to new labels for reference updates
+  const idToLabelMap = new Map<string, string>();
+  nodes.forEach((node) => {
+    idToLabelMap.set(node.id, node.data.label);
+  });
 
   // Helper function to get contained nodes for a network
   const getContainedNodes = (networkNode: Node): string[] => {
@@ -240,22 +246,22 @@ export function generateInfrastructureText(
           y <= networkBounds.bottom
         );
       })
-      .map((node) => node.id);
+      .map((node) => idToLabelMap.get(node.id) || node.id);
   };
 
   // Group nodes by type
   nodes.forEach((node) => {
-    const { id, type, data } = node;
+    const { type, data } = node;
     if (!type) return; // Skip nodes without a type
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { label, ...specs } = data;
+    const nodeId = label;
 
     if (type === "cloudNetwork") {
       const style = node.style as
         | { width?: number; height?: number }
         | undefined;
-      infrastructure.networks[id] = {
+      infrastructure.networks[nodeId] = {
         specs,
         contains: getContainedNodes(node),
         metadata: {
@@ -287,7 +293,7 @@ export function generateInfrastructureText(
 
       if (type in elementTypeMap) {
         const elementType = elementTypeMap[type as NodeType];
-        infrastructure.elements[id] = {
+        infrastructure.elements[nodeId] = {
           type: elementType,
           specs,
           metadata: {
@@ -301,10 +307,11 @@ export function generateInfrastructureText(
     }
   });
 
-  // Add connections
+  // Add connections with updated references
   edges.forEach((edge) => {
     const { source, target, data } = edge;
-    const sourceElement = infrastructure.elements[source];
+    const sourceElement =
+      infrastructure.elements[idToLabelMap.get(source) || source];
 
     // Skip if source doesn't exist or is a network (networks don't have connections)
     if (!sourceElement) return;
@@ -312,9 +319,9 @@ export function generateInfrastructureText(
     // Initialize connections array if it doesn't exist
     if (!sourceElement.connections) sourceElement.connections = [];
 
-    // Add the connection with protocols
+    // Add the connection with protocols, using the new label as the target
     sourceElement.connections.push({
-      to: target,
+      to: idToLabelMap.get(target) || target,
       protocols: data.protocols,
     });
   });

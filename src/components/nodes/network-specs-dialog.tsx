@@ -29,6 +29,7 @@ interface NetworkSpecsDialogProps {
 }
 
 const formSchema = z.object({
+  label: z.string().min(1, { message: "Label is required" }),
   cidr: z
     .string()
     .min(1, { message: "CIDR is required" })
@@ -48,6 +49,7 @@ export function NetworkSpecsDialog({ nodeId }: NetworkSpecsDialogProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      label: node?.data.label || "",
       cidr: node?.data.cidr || "",
     },
   });
@@ -60,6 +62,7 @@ export function NetworkSpecsDialog({ nodeId }: NetworkSpecsDialogProps) {
             ...n,
             data: {
               ...n.data,
+              label: values.label,
               cidr: values.cidr,
             },
           };
@@ -83,10 +86,23 @@ export function NetworkSpecsDialog({ nodeId }: NetworkSpecsDialogProps) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Network CIDR</DialogTitle>
+          <DialogTitle>Edit Network</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="label"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Label</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Network Name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="cidr"

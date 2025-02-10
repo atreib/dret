@@ -30,6 +30,7 @@ interface NodeSpecsDialogProps {
 
 // Simple schema for an array of specs
 const formSchema = z.object({
+  label: z.string().min(1, { message: "Label is required" }),
   specs: z.array(
     z.object({
       key: z.string().min(1, { message: "Required" }),
@@ -48,10 +49,10 @@ export function NodeSpecsDialog({ nodeId }: NodeSpecsDialogProps) {
 
   // Transform node data into array of key-value pairs
   const getInitialValues = () => {
-    if (!node) return { specs: [] };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { label: _, ...specs } = node.data;
+    if (!node) return { label: "", specs: [] };
+    const { label, ...specs } = node.data;
     return {
+      label: label || "",
       specs: Object.entries(specs).map(([key, value]) => ({
         key,
         value: String(value),
@@ -98,6 +99,7 @@ export function NodeSpecsDialog({ nodeId }: NodeSpecsDialogProps) {
             ...n,
             data: {
               ...newData,
+              label: values.label,
               ...newSpecs,
             },
           };
@@ -136,6 +138,19 @@ export function NodeSpecsDialog({ nodeId }: NodeSpecsDialogProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="label"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Label</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Node Name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {form.watch("specs").map((_, index) => (
               <div key={index} className="flex items-center gap-4">
                 <div className="grid flex-1 gap-2">
