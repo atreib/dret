@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { CodeIcon, Loader2 } from "lucide-react";
 import { TerraformService } from "@/lib/services/terraform-service";
 
 interface GenerateTerraformDialogProps {
@@ -47,7 +47,10 @@ export function GenerateTerraformDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Generate Terraform</Button>
+        <Button>
+          <CodeIcon className="mr-2 h-4 w-4" />
+          Export Terraform
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
