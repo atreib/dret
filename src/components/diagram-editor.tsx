@@ -46,7 +46,6 @@ import { NetworkConnectionEdge } from "./edges/network-connection";
 import { useSyncState } from "@/hooks/useSyncState";
 import { SyncLoadingIndicator } from "@/components/sync-loading-indicator";
 import { GenerateTerraformDialog } from "./generate-terraform-dialog";
-import { DownloadTerraformButton } from "./download-terraform-button";
 
 const nodeTypes = {
   cloudMachine: CloudMachineNode,
@@ -321,9 +320,6 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
   const { theme } = useTheme();
   const reactFlowInstance = useReactFlow();
   const editorRef = React.useRef<Parameters<OnMount>[0] | null>(null);
-  const [terraformContent, setTerraformContent] = React.useState<string | null>(
-    null
-  );
 
   // Load project data if projectId is provided
   React.useEffect(() => {
@@ -604,13 +600,7 @@ function DiagramEditorContent({ projectId }: DiagramEditorProps) {
               debouncedMonacoUpdate(savedText);
             }}
           />
-          <GenerateTerraformDialog
-            content={text}
-            onGenerated={setTerraformContent}
-          />
-          {terraformContent && (
-            <DownloadTerraformButton content={terraformContent} />
-          )}
+          <GenerateTerraformDialog content={text} />
         </div>
         <div className="flex w-full justify-start lg:justify-end items-center gap-2">
           <Button

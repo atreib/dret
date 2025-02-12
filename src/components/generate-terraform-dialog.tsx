@@ -4,6 +4,7 @@ import * as React from "react";
 import { Button } from "./ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -17,67 +18,74 @@ import { TerraformService } from "@/lib/services/terraform-service";
 
 interface GenerateTerraformDialogProps {
   content: string;
-  onGenerated: (terraform: string) => void;
 }
 
 export function GenerateTerraformDialog({
   content,
-  onGenerated,
 }: GenerateTerraformDialogProps) {
-  const [isPending, setIsPending] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleGenerate = async () => {
     try {
-      setIsPending(true);
       setError(null);
       const terraform = await TerraformService.generateTerraform(content);
-      onGenerated(terraform);
-      setIsOpen(false);
+
+      // Create and trigger download
+      const blob = new Blob([terraform], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "main.tf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to generate Terraform"
       );
-    } finally {
-      setIsPending(false);
     }
   };
+
+  // Start generation as soon as dialog opens
+  React.useEffect(() => {
+    if (isOpen) {
+      handleGenerate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="w-full lg:w-min">
           <CodeIcon className="mr-2 h-4 w-4" />
           Export Terraform
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Generate Terraform Configuration</DialogTitle>
+          <DialogTitle>Generating Terraform Configuration</DialogTitle>
           <DialogDescription>
-            Generate Terraform configuration for your cloud infrastructure.
+            Please wait while we generate your Terraform configuration...
           </DialogDescription>
         </DialogHeader>
 
-        {error && (
+        {error ? (
           <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+        ) : (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
         )}
-
         <DialogFooter>
-          <Button onClick={handleGenerate} disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              "Generate"
-            )}
-          </Button>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
