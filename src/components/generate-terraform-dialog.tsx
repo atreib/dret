@@ -13,8 +13,9 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CodeIcon, Loader2 } from "lucide-react";
+import { CodeIcon } from "lucide-react";
 import { TerraformService } from "@/lib/services/terraform-service";
+import { RotatingLoadingMessage } from "./ui/rotating-loading-message";
 
 interface GenerateTerraformDialogProps {
   content: string;
@@ -25,6 +26,15 @@ export function GenerateTerraformDialog({
 }: GenerateTerraformDialogProps) {
   const [error, setError] = React.useState<string | null>(null);
   const [isOpen, setIsOpen] = React.useState(false);
+
+  const loadingMessages = [
+    "Analyzing your infrastructure diagram...",
+    "Converting to Terraform configuration...",
+    "Optimizing resource definitions...",
+    "Validating infrastructure components...",
+    "Generating provider configurations...",
+    "Almost there, finalizing your Terraform code...",
+  ];
 
   const handleGenerate = async () => {
     try {
@@ -78,8 +88,8 @@ export function GenerateTerraformDialog({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
+          <div className="flex items-center justify-center py-4">
+            <RotatingLoadingMessage messages={loadingMessages} />
           </div>
         )}
         <DialogFooter>
