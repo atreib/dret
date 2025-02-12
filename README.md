@@ -12,6 +12,7 @@ A modern web application that converts cloud infrastructure text descriptions in
 - 🌙 Dark/Light mode support
 - 🎯 Snap-to-grid and auto-layout functionality
 - 🔌 Support for various cloud infrastructure elements
+- 🚀 Generate Terraform configurations for AWS, GCP, and Azure
 
 ## Getting Started
 
@@ -92,6 +93,42 @@ networks:
 - **API Gateway** (`type: apigateway`): API management with auth and rate limiting
 - **Firewall** (`type: firewall`): Network security with inbound/outbound rules
 - **Network**: Container for grouping related elements with CIDR range
+
+### Terraform Generation
+
+The application can generate Terraform configurations for your cloud infrastructure diagrams. This feature supports:
+
+- **Multiple Cloud Providers**:
+
+  - AWS (using AWS provider)
+  - GCP (using Google Cloud provider)
+  - Azure (using AzureRM provider)
+
+- **Generated Resources**:
+  - Compute instances (EC2, Compute Engine, Virtual Machines)
+  - Databases (RDS, Cloud SQL, Azure SQL)
+  - Load Balancers (ALB/NLB, Cloud Load Balancing, Azure Load Balancer)
+  - Storage (S3, Cloud Storage, Blob Storage)
+  - Message Queues (SQS/SNS, Pub/Sub, Service Bus)
+  - CDN (CloudFront, Cloud CDN, Azure CDN)
+  - API Management (API Gateway, Cloud Endpoints, API Management)
+  - Network Security (Security Groups, Firewall Rules, Network Security Groups)
+  - Networking (VPC, VPC Networks, Virtual Networks)
+
+To generate Terraform configurations:
+
+1. Create your infrastructure diagram using the visual editor or YAML
+2. Click the "Generate Terraform" button in the toolbar
+3. Wait for the generation to complete
+4. Click "Download Terraform" to save the configuration as `main.tf`
+
+The generated Terraform configurations include:
+
+- Provider configuration
+- Resource definitions with best practices
+- Network configuration and security
+- Required variables with default values
+- Output values for important resources
 
 ## Developer Guide
 
