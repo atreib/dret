@@ -86,9 +86,19 @@ services:
       URL.revokeObjectURL(url);
       setIsGenerating(false);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to generate Terraform"
-      );
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to generate Terraform";
+
+      if (
+        errorMessage.includes("Please set your API key") ||
+        errorMessage.includes("Validation failed")
+      ) {
+        setError(
+          "To use this feature, you need to configure your API key in Settings. Click the gear icon in the top right corner to open Settings."
+        );
+      } else {
+        setError(errorMessage);
+      }
       setIsGenerating(false);
     }
   };

@@ -69,7 +69,17 @@ export class TerraformService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
+        if (response.status === 401) {
+          throw new Error(
+            "Please set your API key in settings to use this feature"
+          );
+        }
+
+        const data = await response.json();
+        console.error(data);
+        throw new Error(
+          `We could not communicate with your selected model at the moment. Please, try again later.`
+        );
       }
 
       const data = await response.json();
