@@ -5,6 +5,14 @@ export class TerraformService {
   private static readonly TIMEOUT_MS = 60000; // 60 second timeout
   private static readonly MAX_TOKENS = 4000;
 
+  private static stripMarkdownCodeBlock(content: string): string {
+    // Remove ```hcl, ```tf, or just ``` tags from start and end
+    return content
+      .replace(/^```(?:hcl|tf)?\n/, "")
+      .replace(/\n```$/, "")
+      .trim();
+  }
+
   static async generateTerraform(yaml: string): Promise<string> {
     const settings = await settingsRepository.getCurrentSettings();
 
@@ -65,7 +73,7 @@ export class TerraformService {
       }
 
       const data = await response.json();
-      return data.choices[0].message.content;
+      return this.stripMarkdownCodeBlock(data.choices[0].message.content);
     } catch (error) {
       if (error instanceof Error) {
         throw error;
