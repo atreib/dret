@@ -248,12 +248,6 @@ export function SettingsSheet({ children }: React.PropsWithChildren) {
                         <SelectItem value={CloudProviderEnum.AWS}>
                           AWS
                         </SelectItem>
-                        <SelectItem value={CloudProviderEnum.GCP}>
-                          Google Cloud
-                        </SelectItem>
-                        <SelectItem value={CloudProviderEnum.AZURE}>
-                          Azure
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription>

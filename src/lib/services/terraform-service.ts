@@ -1,4 +1,4 @@
-import { settingsRepository } from "../db/models/settings";
+import { settingsRepository, CloudProviderEnum } from "../db/models/settings";
 import { TerraformContextBuilder } from "./terraform-context-builder";
 
 export class TerraformService {
@@ -23,10 +23,8 @@ export class TerraformService {
     }
 
     // Convert cloud provider value to uppercase for the enum key
-    const cloudProvider = settings.cloudProvider.toUpperCase() as
-      | "AWS"
-      | "GCP"
-      | "AZURE";
+    const cloudProvider =
+      settings.cloudProvider.toUpperCase() as keyof typeof CloudProviderEnum;
 
     const messages = [
       {
