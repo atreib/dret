@@ -1,13 +1,8 @@
-"use client";
-
 import { ModeToggle } from "@/components/mode-toggle";
 import { ProjectsSheet } from "@/components/projects-sheet";
 import { SettingsSheet } from "@/components/settings-sheet";
 import Link from "next/link";
-import Image from "next/image";
 import { DocumentationSidebar } from "./documentation-sidebar";
-import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
@@ -17,20 +12,11 @@ import { FileText, Folder, MenuIcon, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 
 export function Navbar() {
-  const { theme } = useTheme();
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="w-full flex h-14 items-center px-12 justify-between">
         <Link href="/" className="font-semibold">
-          <Image
-            src="/logo.png"
-            alt="Cloudret"
-            width={120}
-            height={56}
-            className={cn(theme === "dark" && "invert")}
-            suppressHydrationWarning
-          />
+          Cloudret
         </Link>
         <div className="flex flex-1 items-center space-x-2 justify-end">
           <nav className="hidden md:flex items-center space-x-2">
