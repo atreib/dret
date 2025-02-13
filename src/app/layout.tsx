@@ -13,6 +13,63 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Cloudret",
   description: "Easily work on cloud infrastructure through diagrams and text",
+  metadataBase: new URL("https://cloudret.andretreib.com"),
+  authors: [{ name: "Andre Treib", url: "https://andretreib.com" }],
+  creator: "Andre Treib",
+  publisher: "Andre Treib",
+  applicationName: "Cloudret",
+  keywords: [
+    "cloud infrastructure",
+    "infrastructure as code",
+    "terraform",
+    "diagrams",
+    "cloud architecture",
+    "aws",
+    "gcp",
+    "azure",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
+  openGraph: {
+    title: "Cloudret",
+    description:
+      "Easily work on cloud infrastructure through diagrams and text",
+    url: "https://cloudret.com",
+    siteName: "Cloudret",
+    images: [
+      {
+        url: "/logo.png",
+        width: 800,
+        height: 600,
+        alt: "Cloudret Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cloudret",
+    description:
+      "Easily work on cloud infrastructure through diagrams and text",
+    images: ["/logo.png"],
+    creator: "@atreib",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+  },
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
 };
 
 export default function RootLayout({
